@@ -1,2 +1,1 @@
-# HeadHunterG11-BE
-HeadHunter backend
+# Aplikacja Head Hunter API
