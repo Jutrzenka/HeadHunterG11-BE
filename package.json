@@ -1,11 +1,12 @@
 {
-  "name": "nest-typescript-starter",
+  "name": "head-hunter",
   "private": true,
   "version": "0.1.0",
   "description": "Application for managing students",
+  "engineStrict" : true,
   "engines" : {
-    "npm" : ">=8.12.0",
-    "node" : ">=18.0.0"
+    "npm" : ">=8.10.0",
+    "node" : ">=18.4.0"
   },
   "scripts": {
     "prebuild": "rimraf dist",
