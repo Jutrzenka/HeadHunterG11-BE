@@ -5,11 +5,11 @@ import { AppService } from './app.service';
 
 @Module({
   imports: [
+    //use schema
+
+    //connection with remote MongoDb
     MongooseModule.forRoot(
       'mongodb+srv://AlexWilk:alamakota@headhuntercluster.cvbkb.mongodb.net/?retryWrites=true&w=majority',
-      {
-        connectionName: 'headhuntercluster',
-      },
     ),
   ],
   controllers: [AppController],
