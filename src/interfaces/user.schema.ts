@@ -4,8 +4,6 @@ import { Document } from 'mongoose';
 @Schema()
 export class User extends Document {
   @Prop()
-  id: string;
-  @Prop()
   idUser: string;
   @Prop()
   role: string;
