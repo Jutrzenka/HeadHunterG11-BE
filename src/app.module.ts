@@ -1,17 +1,18 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
+import configuration from './config/configuration';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
-    //use schema
-
-    //connection with remote MongoDb
-    MongooseModule.forRoot(
-      'mongodb+srv://AlexWilk:alamakota@headhuntercluster.cvbkb.mongodb.net/?retryWrites=true&w=majority',
-    ),
+    ConfigModule.forRoot({
+      load: [configuration],
+    }),
+    MongooseModule.forRoot(process.env.DATABASE_USER_MONGO),
     UsersModule,
   ],
   controllers: [AppController],

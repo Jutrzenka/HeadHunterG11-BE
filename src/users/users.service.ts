@@ -1,9 +1,8 @@
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { v4 as uuidv4 } from 'uuid';
 import { User, UserDocument } from 'src/interfaces/user.schema';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -14,12 +13,12 @@ export class UsersService {
 
   async newUser(): Promise<User> {
     const newUser = await this.userModel.create({
-      idUser: 'jakis numer',
+      idUser: uuidv4(),
       role: 'A',
       email: 'e@mai.l',
       password: '111111',
-      accessToken: 'token',
-      registerCode: 'registrationCode',
+      accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
+      registerCode: 'dadfaDA56adfad',
     });
     return newUser.save();
   }
