@@ -10,24 +10,30 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 @Module({
   imports: [
-  ConfigModule.forRoot({
-  load: [configuration],
-  }),
+    // src/config/configuration.ts ENV
+    ConfigModule.forRoot({
+      load: [configuration],
+    }),
+    // SQL
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: '',
-      database: 'head_hunter',
+      host: configuration().databaseMaria.host,
+      port: configuration().databaseMaria.port,
+      username: configuration().databaseMaria.username,
+      password: configuration().databaseMaria.password,
+      database: configuration().databaseMaria.name,
       entities: ['dist/**/**.entity{.ts,.js}'],
       bigNumberStrings: false,
       logging: true,
       synchronize: true,
     }),
+    // Główny moduł pod SQL
     UserModule,
+    // Tablica z rozmowami SQL
     InterviewModule,
-    MongooseModule.forRoot(process.env.DATABASE_USER_MONGO),
+    // MongoDB
+    MongooseModule.forRoot(configuration().databaseMongo.host),
+    // Dokument w MongoDB
     UsersModule,
   ],
   controllers: [AppController],
