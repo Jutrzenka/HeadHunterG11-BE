@@ -1,12 +1,18 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
+import configuration from './config/configuration';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { InterviewModule } from './interview/interview.module';
-
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { UsersModule } from './users/users.module';
 @Module({
   imports: [
+  ConfigModule.forRoot({
+  load: [configuration],
+  }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: 'localhost',
@@ -21,6 +27,8 @@ import { InterviewModule } from './interview/interview.module';
     }),
     UserModule,
     InterviewModule,
+    MongooseModule.forRoot(process.env.DATABASE_USER_MONGO),
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
