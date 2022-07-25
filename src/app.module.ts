@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
-import configuration from './config/configuration';
+import configuration from './Utils/config/configuration';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserModule } from './user/user.module';
+import { UserDataModule } from './userData/userData.module';
 import { InterviewModule } from './interview/interview.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -25,9 +25,10 @@ import { AuthModule } from './auth/auth.module';
       entities: ['dist/**/**.entity{.ts,.js}'],
       bigNumberStrings: false,
       logging: true,
+      //synchronize: true,
     }),
     // Główny moduł pod SQL
-    UserModule,
+    UserDataModule,
     // Tablica z rozmowami SQL
     InterviewModule,
     // MongoDB

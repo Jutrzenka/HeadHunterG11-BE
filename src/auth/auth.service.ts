@@ -2,7 +2,7 @@ import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { v4 as uuidv4 } from 'uuid';
-import { User, UserDocument } from 'src/interfaces/user.schema';
+import { User, UserDocument } from 'src/Utils/schema/user.schema';
 
 @Injectable()
 export class AuthService {

@@ -7,7 +7,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Status, TypeWork, ContractType } from '../../types';
+import { Status, TypeWork, ContractType } from '../../Utils/types/export';
 
 @Entity()
 export class Student extends BaseEntity {

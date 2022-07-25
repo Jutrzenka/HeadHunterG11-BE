@@ -3,9 +3,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
-export class UserService {
+export class UserDataService {
   create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+    return 'This action adds a new userData';
   }
 
   findAll() {

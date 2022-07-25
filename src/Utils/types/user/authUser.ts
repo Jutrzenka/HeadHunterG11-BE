@@ -1,4 +1,4 @@
-export interface User {
+export interface AuthUser {
   idUser: string;
   role: string;
   email: string;
@@ -7,4 +7,4 @@ export interface User {
   registerCode: string;
 }
 
-export type CreateUserResponse = User;
+export type CreateUserResponse = AuthUser;
