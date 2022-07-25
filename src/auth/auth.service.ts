@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { User, UserDocument } from 'src/interfaces/user.schema';
 
 @Injectable()
-export class UsersService {
+export class AuthService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,

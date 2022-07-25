@@ -7,7 +7,7 @@ import { UserModule } from './user/user.module';
 import { InterviewModule } from './interview/interview.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     // src/config/configuration.ts ENV
@@ -25,7 +25,6 @@ import { UsersModule } from './users/users.module';
       entities: ['dist/**/**.entity{.ts,.js}'],
       bigNumberStrings: false,
       logging: true,
-      synchronize: true,
     }),
     // Główny moduł pod SQL
     UserModule,
@@ -34,7 +33,7 @@ import { UsersModule } from './users/users.module';
     // MongoDB
     MongooseModule.forRoot(configuration().databaseMongo.host),
     // Dokument w MongoDB
-    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
