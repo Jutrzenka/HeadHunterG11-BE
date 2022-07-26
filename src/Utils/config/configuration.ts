@@ -1,5 +1,9 @@
 export default () => ({
-  port: parseInt(process.env.PORT, 10) || 3000,
+  server: {
+    domain: process.env.DOMAIN || 'localhost',
+    port: parseInt(process.env.PORT, 10) || 3000,
+    secretKey: process.env.SECRET_OR_KEY,
+  },
   databaseMongo: {
     host: process.env.DB_NOSQL,
   },

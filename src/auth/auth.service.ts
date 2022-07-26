@@ -1,7 +1,6 @@
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { v4 as uuidv4 } from 'uuid';
 import { User, UserDocument } from 'src/Utils/schema/user.schema';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { Response } from 'express';
@@ -9,6 +8,8 @@ import { hashPwd } from 'src/Utils/hash-pwd';
 import { sign } from 'jsonwebtoken';
 import { JwtPayload } from './jwt.strategy';
 import { v4 as uuid } from 'uuid';
+import configuration from '../Utils/config/configuration';
+import { UserRole } from '../Utils/types/user/authUser';
 
 @Injectable()
 export class AuthService {
@@ -17,25 +18,32 @@ export class AuthService {
     private userModel: Model<UserDocument>,
   ) {}
 
-  async newUser(): Promise<User> {
+  async register(
+    idUser: uuid,
+    role: UserRole,
+    email: string,
+    password: string,
+  ): Promise<User> {
     const newUser = await this.userModel.create({
-      idUser: uuidv4(),
-      role: 'A',
-      email: 'e@mai.l',
-      password: '111111',
-      accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
-      registerCode: 'dadfaDA56adfad',
+      idUser: idUser,
+      role: role,
+      email: email,
+      password: password,
+      accessToken: null,
+      registerCode: null,
     });
     return newUser.save();
   }
 
-  private createToken(currentTokenId: string): {
+  protected createToken(currentTokenId: string): {
     accessToken: string;
     expiresIn: number;
   } {
     const payload: JwtPayload = { id: currentTokenId };
     const expiresIn = 60 * 60 * 24;
-    const accessToken = sign(payload, process.env.SECRET_OR_KEY, { expiresIn });
+    const accessToken = sign(payload, configuration().server.secretKey, {
+      expiresIn,
+    });
     return {
       accessToken,
       expiresIn,
@@ -70,7 +78,7 @@ export class AuthService {
       return res
         .cookie('jwt', token.accessToken, {
           secure: false, // w wersji produkcyjnej (https) ustawiamy true
-          domain: 'localhost',
+          domain: configuration().server.domain,
           httpOnly: true,
         })
         .json({ ok: true });
@@ -85,7 +93,7 @@ export class AuthService {
       await user.save();
       res.clearCookie('jwt', {
         secure: false,
-        domain: 'localhost',
+        domain: configuration().server.domain,
         httpOnly: true,
       });
       return res.json({ ok: true });
