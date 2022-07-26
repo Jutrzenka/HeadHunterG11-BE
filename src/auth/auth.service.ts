@@ -29,10 +29,6 @@ export class AuthService {
     return newUser.save();
   }
 
-  findAll() {
-    return `This action returns all users`;
-  }
-
   private createToken(currentTokenId: string): {
     accessToken: string;
     expiresIn: number;

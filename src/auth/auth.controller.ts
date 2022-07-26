@@ -10,7 +10,6 @@ import {
 import { AuthService } from './auth.service';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { Response } from 'express';
-import { AuthGuard } from '@nestjs/passport';
 import { UserObj } from '../decorators/userobj.decorator';
 import { User } from '../Utils/schema/user.schema';
 
@@ -26,7 +25,6 @@ export class AuthController {
 
   // Wylogowywanie - resetowanie tokenów itd.
   @Get('/logout')
-  @UseGuards(AuthGuard('jwt'))
   async logout(@UserObj() user: User, @Res() res: Response) {
     return this.usersService.logout(user, res);
   }
