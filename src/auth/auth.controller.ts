@@ -1,5 +1,7 @@
-import { Controller, Delete, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Patch, Post, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { AuthLoginDto } from './dto/auth-login.dto';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -7,8 +9,8 @@ export class AuthController {
 
   // Przyjmowanie danych z formularza i odesłanie tokenu JWT
   @Post('/login')
-  login() {
-    return 'Logowanie';
+  async login(@Body() req: AuthLoginDto, @Res() res: Response) {
+    return this.usersService.login(req, res);
   }
 
   // Wylogowywanie - resetowanie tokenów itd.
