@@ -1,13 +1,15 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
-import configuration from './config/configuration';
+import configuration from './Utils/config/configuration';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserModule } from './user/user.module';
+import { UserDataModule } from './userData/userData.module';
 import { InterviewModule } from './interview/interview.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 @Module({
   imports: [
     // src/config/configuration.ts ENV
@@ -25,16 +27,20 @@ import { UsersModule } from './users/users.module';
       entities: ['dist/**/**.entity{.ts,.js}'],
       bigNumberStrings: false,
       logging: true,
-      synchronize: true,
+      //synchronize: true,
     }),
     // Główny moduł pod SQL
-    UserModule,
+    UserDataModule,
     // Tablica z rozmowami SQL
     InterviewModule,
     // MongoDB
     MongooseModule.forRoot(configuration().databaseMongo.host),
     // Dokument w MongoDB
-    UsersModule,
+    AuthModule,
+    // Serwowanie plików statycznych
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', '/public/build'),
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
