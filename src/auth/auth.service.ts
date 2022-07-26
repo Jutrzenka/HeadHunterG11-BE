@@ -18,6 +18,7 @@ export class AuthService {
     private tokenService: TokenService,
   ) {}
 
+  // Zapisywanie
   async register(
     idUser: uuid,
     role: UserRole,
