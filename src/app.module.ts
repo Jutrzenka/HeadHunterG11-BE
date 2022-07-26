@@ -8,6 +8,8 @@ import { InterviewModule } from './interview/interview.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 @Module({
   imports: [
     // src/config/configuration.ts ENV
@@ -35,6 +37,10 @@ import { AuthModule } from './auth/auth.module';
     MongooseModule.forRoot(configuration().databaseMongo.host),
     // Dokument w MongoDB
     AuthModule,
+    // Serwowanie plików statycznych
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', '/public/build'),
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
