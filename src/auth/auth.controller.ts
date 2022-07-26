@@ -5,27 +5,40 @@ import { Response } from 'express';
 import { UserObj } from '../Utils/decorators/userobj.decorator';
 import { User } from '../Utils/schema/user.schema';
 import { AuthGuard } from '@nestjs/passport';
+import { UserDataService } from '../userData/userData.service';
+import { v4 as uuid } from 'uuid';
+import { UserRole } from '../Utils/types/user/authUser';
 
 @Controller('/auth')
 export class AuthController {
-  constructor(private readonly usersService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userData: UserDataService,
+  ) {}
 
   // Przyjmowanie danych z formularza i odesłanie tokenu JWT
   @Post('/login')
   async login(@Body() req: AuthLoginDto, @Res() res: Response) {
-    return this.usersService.login(req, res);
+    return this.authService.login(req, res);
   }
 
   // Wylogowywanie - resetowanie tokenów itd.
   @Post('/logout')
   @UseGuards(AuthGuard('jwt'))
   async logout(@UserObj() user: User, @Res() res: Response) {
-    return this.usersService.logout(user, res);
+    return this.authService.logout(user, res);
   }
 
   // Pierwsze logowanie. Umieszczanie hasła, idUser, roli
   @Patch('/register')
-  firstLogin() {
-    return 'Pierwsze logowanie';
+  async firstLogin() {
+    const idUser = uuid();
+    await this.authService.register(
+      idUser,
+      UserRole.Student,
+      'kacper@gmail.com',
+      'password',
+    );
+    return await this.userData.register();
   }
 }
