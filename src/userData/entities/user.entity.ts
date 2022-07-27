@@ -4,7 +4,7 @@ import {
   Entity,
   JoinColumn,
   OneToOne,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
 } from 'typeorm';
 
 import { Hr } from './hr.entity';
@@ -12,24 +12,31 @@ import { Student } from './student.entity';
 
 @Entity()
 export class User extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn({
+    length: 36,
+    primary: true,
+    nullable: false,
+    unique: true,
+  })
   idUser: string;
 
   @Column({
     length: 50,
+    nullable: false,
   })
   firstName: string;
 
   @Column({
     length: 100,
+    nullable: false,
   })
   lastName: string;
 
-  @OneToOne((type) => Student)
+  @OneToOne(() => Student)
   @JoinColumn()
   infoStudent: Student;
 
-  @OneToOne((type) => Hr)
+  @OneToOne(() => Hr)
   @JoinColumn()
   infoHR: Hr;
 }

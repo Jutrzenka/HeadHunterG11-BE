@@ -2,6 +2,7 @@ export default () => ({
   server: {
     domain: process.env.DOMAIN || 'localhost',
     port: parseInt(process.env.PORT, 10) || 3000,
+    salt: parseInt(process.env.SALT_ROUND),
     secretKey: process.env.SECRET_OR_KEY,
   },
   databaseMongo: {

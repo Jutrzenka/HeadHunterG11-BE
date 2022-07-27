@@ -1,2 +1,2 @@
-export * from './student';
-export * from './authUser';
+export * from './Student.type';
+export * from './AuthUser.type';

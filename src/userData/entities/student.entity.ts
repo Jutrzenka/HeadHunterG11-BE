@@ -1,20 +1,35 @@
 import { Interview } from 'src/interview/entities/interview.entity';
+import { v4 as uuid } from 'uuid';
 import {
   BaseEntity,
   Column,
   Entity,
   JoinColumn,
   OneToOne,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
 } from 'typeorm';
 import { Status, TypeWork, ContractType } from '../../Utils/types/export';
 
 @Entity()
 export class Student extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn({
+    length: 36,
+    primary: true,
+    nullable: false,
+    unique: true,
+    default: uuid(),
+  })
   id: string;
 
-  @Column()
+  @Column({
+    length: 36,
+    nullable: false,
+  })
+  idUser: string;
+
+  @Column({
+    nullable: true,
+  })
   status: Status;
 
   @Column()
