@@ -45,12 +45,21 @@ export class AuthController {
   ) {
     const { login, registerCode } = param;
     const { newLogin, password } = body;
-    return this.authService.register({
-      login,
-      newLogin,
-      password,
-      registerCode,
-    });
+    try {
+      const data = await this.authService.register({
+        login,
+        newLogin,
+        password,
+        registerCode,
+      });
+      if (!data) {
+        return { success: false };
+      }
+      return { success: true, data };
+    } catch (err) {
+      console.log(err);
+      return { success: false };
+    }
   }
 
   // Tworzenie uzytkownika - to tylko testowo. Potem będzie to wykorzystywane jedynie przez admina
