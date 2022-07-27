@@ -14,15 +14,14 @@ import { Response } from 'express';
 import { UserObj } from '../Utils/decorators/userobj.decorator';
 import { User } from '../Utils/schema/user.schema';
 import { AuthGuard } from '@nestjs/passport';
-import { UserDataService } from '../userData/userData.service';
 import { UserRole } from '../Utils/types/user/AuthUser.type';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
+import { UserDataService } from 'src/userData/userData.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
-    private readonly authService: AuthService,
-    private readonly userData: UserDataService,
+    private readonly authService: AuthService, // private readonly userDataService: UserDataService,
   ) {}
 
   // Przyjmowanie danych z formularza i odesłanie tokenu JWT
@@ -42,18 +41,24 @@ export class AuthController {
   @Patch('/register/:login/:registerCode')
   async firstLogin(
     @Param() param: { login: string; registerCode: string },
-    @Body() body: { newLogin: string; password: string },
+    @Body()
+    body: {
+      newLogin: string;
+      password: string;
+      firstName: string;
+      lastName: string;
+    },
   ): Promise<JsonCommunicationType> {
     const { login, registerCode } = param;
-    const { newLogin, password } = body;
+    const { newLogin, password, firstName, lastName } = body;
     try {
-      const data = await this.authService.register({
+      const mongoDbData = await this.authService.register({
         login,
         newLogin,
         password,
         registerCode,
       });
-      if (!data) {
+      if (!mongoDbData) {
         return {
           success: false,
           typeData: 'status',
@@ -63,6 +68,11 @@ export class AuthController {
           },
         };
       }
+      // const mariaDbData = await this.userDataService.create({
+      //   idUser: mongoDbData.idUser,
+      //   firstName,
+      //   lastName,
+      // });
       return {
         success: true,
         typeData: 'status',
