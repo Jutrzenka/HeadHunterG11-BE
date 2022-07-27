@@ -21,7 +21,8 @@ import { UserDataService } from 'src/userData/userData.service';
 @Controller('auth')
 export class AuthController {
   constructor(
-    private readonly authService: AuthService, // private readonly userDataService: UserDataService,
+    private readonly authService: AuthService,
+    private readonly userDataService: UserDataService,
   ) {}
 
   // Przyjmowanie danych z formularza i odesłanie tokenu JWT
@@ -68,11 +69,11 @@ export class AuthController {
           },
         };
       }
-      // const mariaDbData = await this.userDataService.create({
-      //   idUser: mongoDbData.idUser,
-      //   firstName,
-      //   lastName,
-      // });
+      const mariaDbData = await this.userDataService.create({
+        idUser: mongoDbData.idUser,
+        firstName,
+        lastName,
+      });
       return {
         success: true,
         typeData: 'status',
