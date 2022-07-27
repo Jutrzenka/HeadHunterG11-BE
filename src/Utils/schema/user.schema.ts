@@ -7,18 +7,18 @@ export type UserDocument = User & Document;
 export class User extends Document {
   @Prop({ required: true, unique: true })
   idUser: string;
-  @Prop({ required: false })
+  @Prop({ required: true })
   role: string;
   @Prop({ required: true, unique: true })
   email: string;
   @Prop({ required: true, unique: true })
   login: string;
+  @Prop({ required: false, default: null })
+  password: string | null;
+  @Prop({ required: false, default: null })
+  accessToken: string | null;
   @Prop({ required: false })
-  password: string;
-  @Prop({ required: false })
-  accessToken: string;
-  @Prop({ required: false })
-  registerCode: string;
+  registerCode: string | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

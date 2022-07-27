@@ -1,4 +1,13 @@
-import { Body, Controller, Patch, Post, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { Response } from 'express';
@@ -6,7 +15,6 @@ import { UserObj } from '../Utils/decorators/userobj.decorator';
 import { User } from '../Utils/schema/user.schema';
 import { AuthGuard } from '@nestjs/passport';
 import { UserDataService } from '../userData/userData.service';
-import { v4 as uuid } from 'uuid';
 import { UserRole } from '../Utils/types/user/authUser';
 
 @Controller('auth')
@@ -30,13 +38,31 @@ export class AuthController {
   }
 
   // Pierwsze logowanie. Umieszczanie hasła, idUser, roli
-  @Patch('/register')
+  @Patch('/register/:login/:registerCode')
   async firstLogin(
-    @Body() body: { email: string; role: UserRole; password: string },
+    @Param() param: { login: string; registerCode: string },
+    @Body() body: { newLogin: string; password: string },
   ) {
-    const idUser = uuid();
-    const { email, role, password } = body;
-    await this.authService.register(idUser, role, email, password);
-    return await this.userData.register();
+    const { login, registerCode } = param;
+    const { newLogin, password } = body;
+    return this.authService.register({
+      login,
+      newLogin,
+      password,
+      registerCode,
+    });
+  }
+
+  // Tworzenie uzytkownika - to tylko testowo. Potem będzie to wykorzystywane jedynie przez admina
+  @Put('/create')
+  async createUser(@Body() body: { email: string; role: UserRole }) {
+    const { email, role } = body;
+    try {
+      await this.authService.createUser({ role, email });
+      return { success: true };
+    } catch (err) {
+      console.log(err);
+      return { success: false };
+    }
   }
 }

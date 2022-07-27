@@ -18,28 +18,52 @@ export class AuthService {
     private tokenService: TokenService,
   ) {}
 
-  //async create() {}
+  // Dodawanie użytkownika przez Kubę
+  async createUser({
+    email,
+    role,
+  }: {
+    email: string;
+    role: UserRole;
+  }): Promise<User> {
+    const newUser = await this.userModel.create({
+      idUser: uuid(),
+      role,
+      email,
+      login: email.toUpperCase().split('@')[0].concat('-', uuid()),
+      registerCode: uuid(),
+    });
+    return newUser.save();
+  }
 
-  // Dopisywanie danych podczas pierwszego logowania
-  async register(
-    idUser: uuid,
-    role: UserRole,
-    email: string,
-    password: string,
-  ): Promise<User> {
+  // Dopisywanie wymaganych danych podczas pierwszego logowania
+  async register({
+    login,
+    newLogin,
+    password,
+    registerCode,
+  }: {
+    login: string;
+    newLogin: string;
+    password: string;
+    registerCode: string;
+  }): Promise<User> {
     const hashPassword = await encryption(password);
     if (!hashPassword.status) {
       throw new Error(hashPassword.error);
     }
-    const newUser = await this.userModel.create({
-      idUser,
-      role,
-      email,
+    const filter = {
+      login,
+      registerCode,
+    };
+    const updateData = {
+      login: newLogin,
       password: hashPassword.data,
-      accessToken: null,
       registerCode: null,
+    };
+    return this.userModel.findOneAndUpdate(filter, updateData, {
+      new: true,
     });
-    return newUser.save();
   }
 
   async login(req: AuthLoginDto, res: Response) {

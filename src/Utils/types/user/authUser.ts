@@ -1,5 +1,3 @@
-import { v4 as uuid } from 'uuid';
-
 export enum UserRole {
   'Admin' = 'A',
   'Student' = 'S',
@@ -7,8 +5,8 @@ export enum UserRole {
 }
 
 export interface AuthUser {
-  idUser: uuid;
-  role: string;
+  idUser: string;
+  role: UserRole;
   email: string;
   password: string;
   accessToken: string;
