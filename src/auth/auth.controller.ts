@@ -9,7 +9,7 @@ import { UserDataService } from '../userData/userData.service';
 import { v4 as uuid } from 'uuid';
 import { UserRole } from '../Utils/types/user/authUser';
 
-@Controller('/auth')
+@Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
@@ -24,7 +24,7 @@ export class AuthController {
 
   // Wylogowywanie - resetowanie tokenów itd.
   @Post('/logout')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard(['jwtStudent', 'jwtHr']))
   async logout(@UserObj() user: User, @Res() res: Response) {
     return this.authService.logout(user, res);
   }

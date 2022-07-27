@@ -41,21 +41,42 @@ export class AuthService {
       const user = await this.userModel.findOne({
         email: req.email,
         pwdHash: hashPwd(req.pwd),
+        // // Jeśli nie ma poprawionego ze przechowywany jest Hash hasała zamiast zwykłego stringa czy cos ala 'haslo123' to ta opcja niżej
+        // password: req.pwd,
       });
       if (!user) {
         return res.json({ error: 'Invalid login data!' });
       }
-      const token = this.tokenService.createToken(
-        await this.tokenService.generateToken(user),
-      );
 
-      return res
-        .cookie('jwt', token.accessToken, {
-          secure: false, // w wersji produkcyjnej (https) ustawiamy true
-          domain: configuration().server.domain,
-          httpOnly: true,
-        })
-        .json({ ok: true });
+      if (user.role === UserRole.Student) {
+        const token = this.tokenService.createToken(
+          await this.tokenService.generateToken(user),
+          user.role,
+        );
+
+        return res
+          .cookie('jwt', token.accessToken, {
+            secure: false, // w wersji produkcyjnej (https) ustawiamy true
+            domain: configuration().server.domain,
+            httpOnly: true,
+          })
+          .json({ ok: true, student: true });
+      }
+
+      if (user.role === UserRole.HeadHunter) {
+        const token = this.tokenService.createToken(
+          await this.tokenService.generateToken(user),
+          user.role,
+        );
+
+        return res
+          .cookie('jwt', token.accessToken, {
+            secure: false,
+            domain: configuration().server.domain,
+            httpOnly: true,
+          })
+          .json({ ok: true, hr: true });
+      }
     } catch (e) {
       return res.json({ error: e.message });
     }
