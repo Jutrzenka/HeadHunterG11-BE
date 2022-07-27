@@ -7,13 +7,13 @@ export class UserDataController {
   constructor(
     @Inject(UserDataService) private userDataService: UserDataService,
   ) {}
-  //localhost:3000/user/student
+
   @Get('/student')
   @UseGuards(AuthGuard('jwtStudent'))
   getUser() {
     return 'user';
   }
-  //localhost:3000/user/hr
+
   @Get('/hr')
   @UseGuards(AuthGuard('jwtHr'))
   getHr() {

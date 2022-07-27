@@ -4,11 +4,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from 'src/Utils/schema/user.schema';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { Response } from 'express';
-import { hashPwd } from 'src/Utils/hash-pwd';
 import { v4 as uuid } from 'uuid';
 import configuration from '../Utils/config/configuration';
 import { UserRole } from '../Utils/types/user/authUser';
 import { TokenService } from './token.service';
+import { encryption } from '../Utils/function/bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -18,18 +18,24 @@ export class AuthService {
     private tokenService: TokenService,
   ) {}
 
-  // Zapisywanie
+  //async create() {}
+
+  // Dopisywanie danych podczas pierwszego logowania
   async register(
     idUser: uuid,
     role: UserRole,
     email: string,
     password: string,
   ): Promise<User> {
+    const hashPassword = await encryption(password);
+    if (!hashPassword.status) {
+      throw new Error(hashPassword.error);
+    }
     const newUser = await this.userModel.create({
-      idUser: idUser,
-      role: role,
-      email: email,
-      password: password,
+      idUser,
+      role,
+      email,
+      password: hashPassword.data,
       accessToken: null,
       registerCode: null,
     });
@@ -38,11 +44,13 @@ export class AuthService {
 
   async login(req: AuthLoginDto, res: Response) {
     try {
+      const hashPassword = await encryption(req.pwd);
+      if (!hashPassword.status) {
+        throw new Error(hashPassword.error);
+      }
       const user = await this.userModel.findOne({
         email: req.email,
-        pwdHash: hashPwd(req.pwd),
-        // // Jeśli nie ma poprawionego ze przechowywany jest Hash hasała zamiast zwykłego stringa czy cos ala 'haslo123' to ta opcja niżej
-        // password: req.pwd,
+        hashPassword,
       });
       if (!user) {
         return res.json({ error: 'Invalid login data!' });

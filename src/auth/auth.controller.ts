@@ -31,14 +31,12 @@ export class AuthController {
 
   // Pierwsze logowanie. Umieszczanie hasła, idUser, roli
   @Patch('/register')
-  async firstLogin() {
+  async firstLogin(
+    @Body() body: { email: string; role: UserRole; password: string },
+  ) {
     const idUser = uuid();
-    await this.authService.register(
-      idUser,
-      UserRole.Student,
-      'kacper@gmail.com',
-      'password',
-    );
+    const { email, role, password } = body;
+    await this.authService.register(idUser, role, email, password);
     return await this.userData.register();
   }
 }
