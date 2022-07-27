@@ -15,7 +15,8 @@ import { UserObj } from '../Utils/decorators/userobj.decorator';
 import { User } from '../Utils/schema/user.schema';
 import { AuthGuard } from '@nestjs/passport';
 import { UserDataService } from '../userData/userData.service';
-import { UserRole } from '../Utils/types/user/authUser';
+import { UserRole } from '../Utils/types/user/AuthUser.type';
+import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 
 @Controller('auth')
 export class AuthController {
@@ -42,7 +43,7 @@ export class AuthController {
   async firstLogin(
     @Param() param: { login: string; registerCode: string },
     @Body() body: { newLogin: string; password: string },
-  ) {
+  ): Promise<JsonCommunicationType> {
     const { login, registerCode } = param;
     const { newLogin, password } = body;
     try {
@@ -53,25 +54,58 @@ export class AuthController {
         registerCode,
       });
       if (!data) {
-        return { success: false };
+        return {
+          success: false,
+          typeData: 'status',
+          data: {
+            code: 'A0002',
+            message: 'Błędny link do pierwszej rejestracji',
+          },
+        };
       }
-      return { success: true, data };
+      return {
+        success: true,
+        typeData: 'status',
+        data: null,
+      };
     } catch (err) {
-      console.log(err);
-      return { success: false };
+      return {
+        success: false,
+        typeData: 'status',
+        data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
+      };
     }
   }
 
   // Tworzenie uzytkownika - to tylko testowo. Potem będzie to wykorzystywane jedynie przez admina
   @Put('/create')
-  async createUser(@Body() body: { email: string; role: UserRole }) {
+  async createUser(
+    @Body() body: { email: string; role: UserRole },
+  ): Promise<JsonCommunicationType> {
     const { email, role } = body;
     try {
       await this.authService.createUser({ role, email });
-      return { success: true };
+      return {
+        success: true,
+        typeData: 'status',
+        data: null,
+      };
     } catch (err) {
-      console.log(err);
-      return { success: false };
+      if (err.code === 11000) {
+        return {
+          success: false,
+          typeData: 'status',
+          data: {
+            code: 'A0003',
+            message: 'Unikalne dane nie mogą się duplikować',
+          },
+        };
+      }
+      return {
+        success: false,
+        typeData: 'status',
+        data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
+      };
     }
   }
 }

@@ -4,7 +4,7 @@ export enum UserRole {
   'HeadHunter' = 'H',
 }
 
-export interface AuthUser {
+export interface AuthUserType {
   idUser: string;
   role: UserRole;
   email: string;
@@ -13,4 +13,4 @@ export interface AuthUser {
   registerCode: string;
 }
 
-export type CreateUserResponse = AuthUser;
+export type CreateUserResponse = AuthUserType;

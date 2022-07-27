@@ -6,7 +6,7 @@ import { AuthLoginDto } from './dto/auth-login.dto';
 import { Response } from 'express';
 import { v4 as uuid } from 'uuid';
 import configuration from '../Utils/config/configuration';
-import { UserRole } from '../Utils/types/user/authUser';
+import { UserRole } from '../Utils/types/user/AuthUser.type';
 import { TokenService } from './token.service';
 import { encryption } from '../Utils/function/bcrypt';
 

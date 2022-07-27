@@ -6,7 +6,7 @@ import { sign } from 'jsonwebtoken';
 import { JwtPayload } from './jwtStudent.strategy';
 import { v4 as uuid } from 'uuid';
 import configuration from '../Utils/config/configuration';
-import { UserRole } from '../Utils/types/user/authUser';
+import { UserRole } from '../Utils/types/user/AuthUser.type';
 
 @Injectable()
 export class TokenService {
