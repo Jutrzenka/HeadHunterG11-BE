@@ -37,6 +37,7 @@ out/
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
+./public/build
 
 # JIRA plugin
 atlassian-ide-plugin.xml
@@ -397,3 +398,4 @@ Temporary Items
 .env
 dist
 /package-lock.json
+/public/build/

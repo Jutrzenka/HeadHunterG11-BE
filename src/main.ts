@@ -1,10 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
+import configuration from './Utils/config/configuration';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const configService = app.get(ConfigService);
-  await app.listen(configService.get('PORT'));
+  await app.listen(
+    configuration().server.port,
+    configuration().server.domain,
+    () => {
+      console.log('Twoje zmienne .ENV');
+      console.log(configuration());
+    },
+  );
 }
-bootstrap();
+(async () => {
+  await bootstrap();
+})();
