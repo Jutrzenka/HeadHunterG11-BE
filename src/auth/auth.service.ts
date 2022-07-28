@@ -77,7 +77,12 @@ export class AuthService {
         hashPassword,
       });
       if (!user) {
-        return res.json({ error: 'Invalid login data!' });
+        // return res.json({ error: 'Invalid login data!' });
+        return {
+          success: false,
+          typeData: 'status',
+          data: { code: 404, message: 'Not found this User' },
+        };
       }
 
       if (user.role === UserRole.Student) {
@@ -86,13 +91,20 @@ export class AuthService {
           user.role,
         );
 
-        return res
-          .cookie('jwt', token.accessToken, {
-            secure: false, // w wersji produkcyjnej (https) ustawiamy true
-            domain: configuration().server.domain,
-            httpOnly: true,
-          })
-          .json({ ok: true, student: true });
+        return (
+          res
+            .cookie('jwt', token.accessToken, {
+              secure: false, // w wersji produkcyjnej (https) ustawiamy true
+              domain: configuration().server.domain,
+              httpOnly: true,
+            })
+            // .json({ ok: true, student: true });
+            .json({
+              success: true,
+              typeData: 'status',
+              data: null,
+            })
+        );
       }
 
       if (user.role === UserRole.HeadHunter) {
@@ -101,16 +113,28 @@ export class AuthService {
           user.role,
         );
 
-        return res
-          .cookie('jwt', token.accessToken, {
-            secure: false,
-            domain: configuration().server.domain,
-            httpOnly: true,
-          })
-          .json({ ok: true, hr: true });
+        return (
+          res
+            .cookie('jwt', token.accessToken, {
+              secure: false,
+              domain: configuration().server.domain,
+              httpOnly: true,
+            })
+            // .json({ ok: true, hr: true });
+            .json({
+              success: true,
+              typeData: 'status',
+              data: null,
+            })
+        );
       }
     } catch (e) {
-      return res.json({ error: e.message });
+      // return res.json({ error: e.message });
+      return {
+        success: false,
+        typeData: 'status',
+        data: { code: 404, message: e.message },
+      };
     }
   }
 
@@ -123,9 +147,19 @@ export class AuthService {
         domain: configuration().server.domain,
         httpOnly: true,
       });
-      return res.json({ ok: true });
+      // return res.json({ ok: true });
+      return res.json({
+        success: true,
+        typeData: 'status',
+        data: null,
+      });
     } catch (e) {
-      return res.json({ error: e.message });
+      // return res.json({ error: e.message });
+      return {
+        success: false,
+        typeData: 'status',
+        data: { code: 404, message: e.message },
+      };
     }
   }
 }
