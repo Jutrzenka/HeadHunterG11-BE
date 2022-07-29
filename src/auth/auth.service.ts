@@ -8,7 +8,7 @@ import { v4 as uuid } from 'uuid';
 import configuration from '../Utils/config/configuration';
 import { UserRole } from '../Utils/types/user/AuthUser.type';
 import { TokenService } from './token.service';
-import { encryption } from '../Utils/function/bcrypt';
+import { decryption, encryption } from '../Utils/function/bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -68,16 +68,11 @@ export class AuthService {
 
   async login(req: AuthLoginDto, res: Response) {
     try {
-      const hashPassword = await encryption(req.pwd);
-      if (!hashPassword.status) {
-        throw new Error(hashPassword.error);
-      }
       const user = await this.userModel.findOne({
         email: req.email,
-        hashPassword,
       });
-      if (!user) {
-        // return res.json({ error: 'Invalid login data!' });
+      const isUser = await decryption(req.pwd, user.password);
+      if (!isUser) {
         return {
           success: false,
           typeData: 'status',
@@ -91,20 +86,17 @@ export class AuthService {
           user.role,
         );
 
-        return (
-          res
-            .cookie('jwt', token.accessToken, {
-              secure: false, // w wersji produkcyjnej (https) ustawiamy true
-              domain: configuration().server.domain,
-              httpOnly: true,
-            })
-            // .json({ ok: true, student: true });
-            .json({
-              success: true,
-              typeData: 'status',
-              data: null,
-            })
-        );
+        return res
+          .cookie('jwt', token.accessToken, {
+            secure: false, // w wersji produkcyjnej (https) ustawiamy true
+            domain: configuration().server.domain,
+            httpOnly: true,
+          })
+          .json({
+            success: true,
+            typeData: 'status',
+            data: null,
+          });
       }
 
       if (user.role === UserRole.HeadHunter) {
@@ -113,23 +105,19 @@ export class AuthService {
           user.role,
         );
 
-        return (
-          res
-            .cookie('jwt', token.accessToken, {
-              secure: false,
-              domain: configuration().server.domain,
-              httpOnly: true,
-            })
-            // .json({ ok: true, hr: true });
-            .json({
-              success: true,
-              typeData: 'status',
-              data: null,
-            })
-        );
+        return res
+          .cookie('jwt', token.accessToken, {
+            secure: false,
+            domain: configuration().server.domain,
+            httpOnly: true,
+          })
+          .json({
+            success: true,
+            typeData: 'status',
+            data: null,
+          });
       }
     } catch (e) {
-      // return res.json({ error: e.message });
       return {
         success: false,
         typeData: 'status',
@@ -140,8 +128,10 @@ export class AuthService {
 
   async logout(user: User, res: Response) {
     try {
-      user.accessToken = null;
-      await user.save();
+      await this.userModel.findOneAndUpdate(
+        { idUser: user.idUser },
+        { accessToken: null },
+      );
       res.clearCookie('jwt', {
         secure: false,
         domain: configuration().server.domain,

@@ -38,12 +38,12 @@ export class TokenService {
     let userWithThisToken = null;
     do {
       token = uuid();
-      userWithThisToken = await this.userModel.findOne({
-        accessToken: token,
-      });
+      userWithThisToken = await this.userModel.findOne({ accessToken: token });
     } while (!!userWithThisToken);
-    user.accessToken = token;
-    await user.save();
+    await this.userModel.findOneAndUpdate(
+      { idUser: user.idUser },
+      { accessToken: token },
+    );
     return token;
   }
 }
