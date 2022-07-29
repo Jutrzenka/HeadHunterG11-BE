@@ -1,6 +1,7 @@
 import {
   Body,
-  Controller, Get,
+  Controller,
+  Get,
   Param,
   Patch,
   Post,
@@ -11,7 +12,7 @@ import { AuthService } from './auth.service';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { Response } from 'express';
 import { UserObj } from '../Utils/decorators/userobj.decorator';
-import { User } from '../Utils/schema/user.schema';
+import { User } from './schema/user.schema';
 import { AuthGuard } from '@nestjs/passport';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { UserDataService } from 'src/userData/userData.service';

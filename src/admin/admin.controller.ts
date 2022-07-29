@@ -13,7 +13,7 @@ export class AdminController {
     @Body() req: { email: string; pwd: string },
     @Res() res: Response,
   ) {
-    return this.adminService.login(req, res);
+    // return this.adminService.login(req, res);
   }
 
   // Wylogowywanie - resetowanie tokenów itd.
