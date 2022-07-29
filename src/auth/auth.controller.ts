@@ -1,6 +1,6 @@
 import {
   Body,
-  Controller,
+  Controller, Get,
   Param,
   Patch,
   Post,
@@ -32,7 +32,7 @@ export class AuthController {
   }
 
   // Wylogowywanie - resetowanie tokenów itd.
-  @Post('/logout')
+  @Get('/logout')
   @UseGuards(AuthGuard(['jwtStudent', 'jwtHr']))
   async logout(@UserObj() user: User, @Res() res: Response) {
     return this.authService.logout(user, res);
