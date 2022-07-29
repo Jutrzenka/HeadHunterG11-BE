@@ -4,7 +4,6 @@ import {
   Param,
   Patch,
   Post,
-  Put,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -14,7 +13,6 @@ import { Response } from 'express';
 import { UserObj } from '../Utils/decorators/userobj.decorator';
 import { User } from '../Utils/schema/user.schema';
 import { AuthGuard } from '@nestjs/passport';
-import { UserRole } from '../Utils/types/user/AuthUser.type';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { UserDataService } from 'src/userData/userData.service';
 
@@ -80,38 +78,6 @@ export class AuthController {
         data: null,
       };
     } catch (err) {
-      return {
-        success: false,
-        typeData: 'status',
-        data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-      };
-    }
-  }
-
-  // Tworzenie uzytkownika - to tylko testowo. Potem będzie to wykorzystywane jedynie przez admina
-  @Put('/create')
-  async createUser(
-    @Body() body: { email: string; role: UserRole },
-  ): Promise<JsonCommunicationType> {
-    const { email, role } = body;
-    try {
-      await this.authService.createUser({ role, email });
-      return {
-        success: true,
-        typeData: 'status',
-        data: null,
-      };
-    } catch (err) {
-      if (err.code === 11000) {
-        return {
-          success: false,
-          typeData: 'status',
-          data: {
-            code: 'A0003',
-            message: 'Unikalne dane nie mogą się duplikować',
-          },
-        };
-      }
       return {
         success: false,
         typeData: 'status',

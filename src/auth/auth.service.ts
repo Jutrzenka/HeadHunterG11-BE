@@ -1,10 +1,9 @@
 import { Model } from 'mongoose';
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from 'src/Utils/schema/user.schema';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { Response } from 'express';
-import { v4 as uuid } from 'uuid';
 import configuration from '../Utils/config/configuration';
 import { UserRole } from '../Utils/types/user/AuthUser.type';
 import { TokenService } from './token.service';
@@ -17,24 +16,6 @@ export class AuthService {
     private userModel: Model<UserDocument>,
     private tokenService: TokenService,
   ) {}
-
-  // Dodawanie użytkownika przez Kubę
-  async createUser({
-    email,
-    role,
-  }: {
-    email: string;
-    role: UserRole;
-  }): Promise<User> {
-    const newUser = await this.userModel.create({
-      idUser: uuid(),
-      role,
-      email,
-      login: email.toUpperCase().split('@')[0].concat('-', uuid()),
-      registerCode: uuid(),
-    });
-    return newUser.save();
-  }
 
   // Dopisywanie wymaganych danych podczas pierwszego logowania
   async register({
