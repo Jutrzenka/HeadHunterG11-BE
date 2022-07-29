@@ -1,13 +1,19 @@
-import { Controller, Post, Put } from '@nestjs/common';
+import { Body, Controller, Post, Put, Res } from '@nestjs/common';
 //import { UserRole } from '../Utils/types/user/AuthUser.type';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
+import { AdminService } from './admin.service';
+import { Response } from 'express';
 
-@Controller('auth')
+@Controller('admin')
 export class AdminController {
+  constructor(private readonly adminService: AdminService) {}
   // Przyjmowanie danych z formularza i odesłanie tokenu JWT
   @Post('/login')
-  async login() {
-    return 'Login';
+  async login(
+    @Body() req: { email: string; pwd: string },
+    @Res() res: Response,
+  ) {
+    return this.adminService.login(req, res);
   }
 
   // Wylogowywanie - resetowanie tokenów itd.
