@@ -10,12 +10,19 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
     // src/config/configuration.ts ENV
     ConfigModule.forRoot({
       load: [configuration],
+    }),
+    // MongoDB
+    MongooseModule.forRoot(configuration().databaseMongo.host),
+    // Serwowanie plików statycznych
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', '/public/build'),
     }),
     // SQL
     TypeOrmModule.forRoot({
@@ -28,20 +35,13 @@ import { join } from 'path';
       entities: ['dist/**/**.entity{.ts,.js}'],
       bigNumberStrings: false,
       logging: true,
-      //synchronize: true,
+      synchronize: true,
     }),
-    // Główny moduł pod SQL
+    // Nasze moduły
     UserDataModule,
-    // Tablica z rozmowami SQL
     InterviewModule,
-    // MongoDB
-    MongooseModule.forRoot(configuration().databaseMongo.host),
-    // Dokument w MongoDB
     AuthModule,
-    // Serwowanie plików statycznych
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '/public/build'),
-    }),
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
