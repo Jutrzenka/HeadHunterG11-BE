@@ -20,10 +20,6 @@ import { AdminModule } from './admin/admin.module';
     }),
     // MongoDB
     MongooseModule.forRoot(configuration().databaseMongo.host),
-    // Serwowanie plików statycznych
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '/public/build'),
-    }),
     // SQL
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -42,6 +38,10 @@ import { AdminModule } from './admin/admin.module';
     InterviewModule,
     AuthModule,
     AdminModule,
+    // Serwowanie plików statycznych
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', '/public/build'),
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

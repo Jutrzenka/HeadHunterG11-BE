@@ -1,10 +1,19 @@
-import { Body, Controller, Post, Put, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HostParam,
+  Post,
+  Put,
+  Res,
+} from '@nestjs/common';
 //import { UserRole } from '../Utils/types/user/AuthUser.type';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { AdminService } from './admin.service';
 import { Response } from 'express';
 
-@Controller('admin')
+// TODO Ogarnąć middleware do obsługi subdomain. Ustawić ścieżki
+@Controller('api')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
   // Przyjmowanie danych z formularza i odesłanie tokenu JWT
@@ -17,9 +26,10 @@ export class AdminController {
   }
 
   // Wylogowywanie - resetowanie tokenów itd.
-  @Post('/logout')
-  async logout() {
-    return 'Logout';
+  @Get('/logout')
+  async logout(@HostParam('subdomain') account: string) {
+    console.log(account);
+    return account;
   }
 
   // Tworzenie uzytkownika - to tylko testowo. Potem będzie to wykorzystywane jedynie przez admina

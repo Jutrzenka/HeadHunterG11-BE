@@ -6,7 +6,7 @@ import { AuthLoginDto } from './dto/auth-login.dto';
 import { Response } from 'express';
 import configuration from '../Utils/config/configuration';
 import { UserRole } from '../Utils/types/user/AuthUser.type';
-import { TokenService } from './token.service';
+import { TokenService } from './authorization-token/token.service';
 import { decryption, encryption } from '../Utils/function/bcrypt';
 
 @Injectable()
