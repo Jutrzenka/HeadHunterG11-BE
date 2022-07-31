@@ -7,13 +7,11 @@ import {
   Put,
   Res,
 } from '@nestjs/common';
-//import { UserRole } from '../Utils/types/user/AuthUser.type';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { AdminService } from './admin.service';
 import { Response } from 'express';
 
-// TODO Ogarnąć middleware do obsługi subdomain. Ustawić ścieżki
-@Controller('api')
+@Controller('/admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
   // Przyjmowanie danych z formularza i odesłanie tokenu JWT

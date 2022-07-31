@@ -2,7 +2,7 @@ import { Controller, Get, Inject, UseGuards } from '@nestjs/common';
 import { UserDataService } from './userData.service';
 import { AuthGuard } from '@nestjs/passport';
 
-@Controller('user')
+@Controller('/api')
 export class UserDataController {
   constructor(
     @Inject(UserDataService) private userDataService: UserDataService,

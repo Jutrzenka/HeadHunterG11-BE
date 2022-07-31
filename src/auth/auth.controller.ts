@@ -17,7 +17,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { UserDataService } from 'src/userData/userData.service';
 
-@Controller('auth')
+@Controller('/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,

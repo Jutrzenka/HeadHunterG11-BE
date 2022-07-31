@@ -4,7 +4,7 @@ import { AdminService } from './admin.service';
 import { User, UserSchema } from '../auth/schema/user.schema';
 import { Admin, AdminSchema } from './schema/admin.schema';
 import { MongooseModule } from '@nestjs/mongoose';
-import { JwtAdminStrategy } from './jwtAdmin.strategy';
+import { JwtAdminStrategy } from './authorization-token/jwtAdmin.strategy';
 
 @Module({
   imports: [
