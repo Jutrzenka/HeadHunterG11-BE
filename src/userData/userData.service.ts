@@ -9,7 +9,8 @@ export class UserDataService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
   ) {}
-  async create({
+
+  async firstLogin({
     idUser,
     firstName,
     lastName,
@@ -20,4 +21,10 @@ export class UserDataService {
   }) {
     return this.usersRepository.create({ idUser, firstName, lastName }).save();
   }
+
+  async getAllStudents() {}
+
+  async getAllHeadhunters() {}
+
+  async deleteUser() {}
 }

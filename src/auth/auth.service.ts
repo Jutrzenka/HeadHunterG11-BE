@@ -133,4 +133,8 @@ export class AuthService {
       };
     }
   }
+
+  async editEmail() {}
+
+  async newRegisterCode() {}
 }

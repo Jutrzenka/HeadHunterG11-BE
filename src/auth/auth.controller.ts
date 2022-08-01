@@ -73,7 +73,7 @@ export class AuthController {
           },
         };
       }
-      const mariaDbData = await this.userDataService.create({
+      const mariaDbData = await this.userDataService.firstLogin({
         idUser: mongoDbData.idUser,
         firstName,
         lastName,
