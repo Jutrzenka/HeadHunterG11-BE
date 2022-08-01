@@ -30,7 +30,13 @@ export class AuthController {
     @Body() req: AuthLoginDto,
     @Res() res: Response,
   ): Promise<JsonCommunicationType> {
-    return this.authService.login(req, res);
+    this.authService.login(req, res);
+    // Tymczasowa zwrotka
+    return {
+      success: false,
+      typeData: 'status',
+      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
+    };
   }
 
   // Wylogowywanie - resetowanie tokenów itd.
@@ -40,7 +46,13 @@ export class AuthController {
     @UserObj() user: User,
     @Res() res: Response,
   ): Promise<JsonCommunicationType> {
-    return this.authService.logout(user, res);
+    this.authService.logout(user, res);
+    // Tymczasowa zwrotka
+    return {
+      success: false,
+      typeData: 'status',
+      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
+    };
   }
 
   @Patch('/register/:login/:registerCode')

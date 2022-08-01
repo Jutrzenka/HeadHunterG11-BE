@@ -12,12 +12,22 @@ export class UserDataController {
   @Get('/student')
   @UseGuards(AuthGuard('jwtStudent'))
   async getUser(): Promise<JsonCommunicationType> {
-    return 'user';
+    // Tymczasowa zwrotka
+    return {
+      success: false,
+      typeData: 'status',
+      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
+    };
   }
 
   @Get('/hr')
   @UseGuards(AuthGuard('jwtHr'))
   async getHr(): Promise<JsonCommunicationType> {
-    return 'Hr';
+    // Tymczasowa zwrotka
+    return {
+      success: false,
+      typeData: 'status',
+      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
+    };
   }
 }

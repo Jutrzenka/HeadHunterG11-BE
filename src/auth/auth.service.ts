@@ -6,7 +6,7 @@ import { AuthLoginDto } from './dto/auth-login.dto';
 import { Response } from 'express';
 import configuration from '../Utils/config/configuration';
 import { UserRole } from '../Utils/types/user/AuthUser.type';
-import { TokenService } from './authorization-token/token.service';
+import { UserTokenService } from './authorization-token/user-token.service';
 import { decryption, encryption } from '../Utils/function/bcrypt';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class AuthService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
-    private tokenService: TokenService,
+    private tokenService: UserTokenService,
   ) {}
 
   // Dopisywanie wymaganych danych podczas pierwszego logowania

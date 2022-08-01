@@ -9,7 +9,7 @@ import configuration from '../../Utils/config/configuration';
 import { UserRole } from '../../Utils/types/user/AuthUser.type';
 
 @Injectable()
-export class TokenService {
+export class UserTokenService {
   constructor(
     @InjectModel(User.name)
     private authModel: Model<UserDocument>,

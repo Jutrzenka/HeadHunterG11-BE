@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TokenService } from './token.service';
+import { AdminTokenService } from './admin-token.service';
 
 describe('TokenService', () => {
-  let service: TokenService;
+  let service: AdminTokenService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [TokenService],
+      providers: [AdminTokenService],
     }).compile();
 
-    service = module.get<TokenService>(TokenService);
+    service = module.get<AdminTokenService>(AdminTokenService);
   });
 
   it('should be defined', () => {
