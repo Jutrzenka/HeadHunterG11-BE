@@ -17,7 +17,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { UserDataService } from 'src/userData/userData.service';
 
-@Controller('/auth')
+@Controller('/api/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
@@ -26,18 +26,23 @@ export class AuthController {
 
   // Przyjmowanie danych z formularza i odesłanie tokenu JWT
   @Post('/login')
-  async login(@Body() req: AuthLoginDto, @Res() res: Response) {
+  async login(
+    @Body() req: AuthLoginDto,
+    @Res() res: Response,
+  ): Promise<JsonCommunicationType> {
     return this.authService.login(req, res);
   }
 
   // Wylogowywanie - resetowanie tokenów itd.
   @Get('/logout')
   @UseGuards(AuthGuard(['jwtStudent', 'jwtHr']))
-  async logout(@UserObj() user: User, @Res() res: Response) {
+  async logout(
+    @UserObj() user: User,
+    @Res() res: Response,
+  ): Promise<JsonCommunicationType> {
     return this.authService.logout(user, res);
   }
 
-  // Pierwsze logowanie. Umieszczanie hasła, idUser, roli
   @Patch('/register/:login/:registerCode')
   async firstLogin(
     @Param() param: { login: string; registerCode: string },
@@ -73,6 +78,7 @@ export class AuthController {
         firstName,
         lastName,
       });
+      await mariaDbData.save();
       return {
         success: true,
         typeData: 'status',
