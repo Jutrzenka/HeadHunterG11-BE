@@ -6,11 +6,13 @@ import { User } from './entities/user.entity';
 import { Student } from './entities/student.entity';
 import { Hr } from './entities/hr.entity';
 import { InterviewModule } from '../interview/interview.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Student, Hr]),
     forwardRef(() => InterviewModule),
+    forwardRef(() => AuthModule),
   ],
   controllers: [UserDataController],
   providers: [UserDataService],

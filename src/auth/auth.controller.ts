@@ -55,42 +55,6 @@ export class AuthController {
       lastName: string;
     },
   ): Promise<JsonCommunicationType> {
-    const { login, registerCode } = param;
-    const { newLogin, password, firstName, lastName } = body;
-    try {
-      const mongoDbData = await this.authService.register({
-        login,
-        newLogin,
-        password,
-        registerCode,
-      });
-      if (!mongoDbData) {
-        return {
-          success: false,
-          typeData: 'status',
-          data: {
-            code: 'A0002',
-            message: 'Błędny link do pierwszej rejestracji',
-          },
-        };
-      }
-      const mariaDbData = await this.userDataService.register({
-        idUser: mongoDbData.idUser,
-        firstName,
-        lastName,
-      });
-      await mariaDbData.save();
-      return {
-        success: true,
-        typeData: 'status',
-        data: null,
-      };
-    } catch (err) {
-      return {
-        success: false,
-        typeData: 'status',
-        data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-      };
-    }
+    return await this.authService.activateFullAccount(param, body);
   }
 }
