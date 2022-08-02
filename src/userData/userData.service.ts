@@ -10,7 +10,7 @@ export class UserDataService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async firstLogin({
+  async register({
     idUser,
     firstName,
     lastName,

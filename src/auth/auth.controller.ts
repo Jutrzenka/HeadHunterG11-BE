@@ -1,19 +1,9 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { Response } from 'express';
 import { UserObj } from '../Utils/decorators/userobj.decorator';
 import { User } from './schema/user.schema';
-import { AuthGuard } from '@nestjs/passport';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { UserDataService } from 'src/userData/userData.service';
 
@@ -41,7 +31,6 @@ export class AuthController {
 
   // Wylogowywanie - resetowanie tokenów itd.
   @Get('/logout')
-  @UseGuards(AuthGuard(['jwtStudent', 'jwtHr']))
   async logout(
     @UserObj() user: User,
     @Res() res: Response,
@@ -85,7 +74,7 @@ export class AuthController {
           },
         };
       }
-      const mariaDbData = await this.userDataService.firstLogin({
+      const mariaDbData = await this.userDataService.register({
         idUser: mongoDbData.idUser,
         firstName,
         lastName,

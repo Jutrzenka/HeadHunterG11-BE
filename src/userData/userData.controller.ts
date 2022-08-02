@@ -1,16 +1,15 @@
-import { Controller, Get, Inject, UseGuards } from '@nestjs/common';
+import { Controller, Get, Inject } from '@nestjs/common';
 import { UserDataService } from './userData.service';
-import { AuthGuard } from '@nestjs/passport';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 
 @Controller('/api/user')
 export class UserDataController {
   constructor(
-    @Inject(UserDataService) private userDataService: UserDataService,
+    @Inject(UserDataService)
+    private userDataService: UserDataService,
   ) {}
 
-  @Get('/student')
-  @UseGuards(AuthGuard('jwtStudent'))
+  @Get('/students')
   async getUser(): Promise<JsonCommunicationType> {
     // Tymczasowa zwrotka
     return {
@@ -20,9 +19,8 @@ export class UserDataController {
     };
   }
 
-  @Get('/hr')
-  @UseGuards(AuthGuard('jwtHr'))
-  async getHr(): Promise<JsonCommunicationType> {
+  @Get('/students/interviews')
+  async GetInterviewsUser(): Promise<JsonCommunicationType> {
     // Tymczasowa zwrotka
     return {
       success: false,

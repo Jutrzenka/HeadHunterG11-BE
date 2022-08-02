@@ -5,12 +5,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Student } from './entities/student.entity';
 import { Hr } from './entities/hr.entity';
-import { AuthModule } from '../auth/auth.module';
+import { InterviewModule } from '../interview/interview.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Student, Hr]),
-    forwardRef(() => AuthModule),
+    forwardRef(() => InterviewModule),
   ],
   controllers: [UserDataController],
   providers: [UserDataService],
