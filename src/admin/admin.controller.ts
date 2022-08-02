@@ -10,8 +10,6 @@ import {
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { AdminService } from './admin.service';
 import { UserRole } from 'src/Utils/types/export';
-import { AuthService } from '../auth/auth.service';
-import { UserDataService } from 'src/userData/userData.service';
 import { AdminAuthService } from './admin-auth.service';
 
 @Controller('/api/admin')
@@ -19,86 +17,43 @@ export class AdminController {
   constructor(
     private readonly adminService: AdminService,
     private readonly adminAuthService: AdminAuthService,
-    private readonly authService: AuthService,
-    private readonly userService: UserDataService,
   ) {}
 
   @Post('/auth/login')
   async login(): Promise<JsonCommunicationType> {
-    this.adminAuthService.login();
-    // Tymczasowa zwrotka
-    return {
-      success: false,
-      typeData: 'status',
-      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-    };
+    return this.adminAuthService.login();
   }
 
   // Wylogowywanie - resetowanie tokenów itd.
   @Post('/auth/logout')
   async logout(): Promise<JsonCommunicationType> {
-    this.adminAuthService.logout();
-    // Tymczasowa zwrotka
-    return {
-      success: false,
-      typeData: 'status',
-      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-    };
+    return this.adminAuthService.logout();
   }
 
   @Get('/students')
   async allStudents(): Promise<JsonCommunicationType> {
-    this.userService.getAllStudents();
-    // Tymczasowa zwrotka
-    return {
-      success: false,
-      typeData: 'status',
-      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-    };
+    return this.adminService.getAllStudents();
   }
 
   @Get('/headhunters')
   async allHeadhunters(): Promise<JsonCommunicationType> {
-    this.userService.getAllHeadhunters();
-    // Tymczasowa zwrotka
-    return {
-      success: false,
-      typeData: 'status',
-      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-    };
+    return this.adminService.getAllHeadhunters();
   }
 
   @Delete('/user/:id')
   async deleteUser(): Promise<JsonCommunicationType> {
-    this.userService.deleteUser();
-    // Tymczasowa zwrotka
-    return {
-      success: false,
-      typeData: 'status',
-      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-    };
+    return this.adminService.deleteUser();
   }
 
   // Pamiętać o zresetowaniu registerCode i wysłaniu ponownie e-maila
   @Patch('/user/:id')
   async editEmailUser(): Promise<JsonCommunicationType> {
-    this.authService.editEmail();
-    // Tymczasowa zwrotka
-    return {
-      success: false,
-      typeData: 'status',
-      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-    };
+    return this.adminService.editEmail();
   }
 
   @Post('/user/:id')
   async newRegisterCode(): Promise<JsonCommunicationType> {
-    this.authService.newRegisterCode();
-    return {
-      success: false,
-      typeData: 'status',
-      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-    };
+    return this.adminService.newRegisterCode();
   }
 
   // Tworzenie użytkownika

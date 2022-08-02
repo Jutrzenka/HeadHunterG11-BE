@@ -21,10 +21,4 @@ export class UserDataService {
   }) {
     return this.usersRepository.create({ idUser, firstName, lastName }).save();
   }
-
-  async getAllStudents() {}
-
-  async getAllHeadhunters() {}
-
-  async deleteUser() {}
 }

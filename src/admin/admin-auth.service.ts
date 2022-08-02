@@ -2,6 +2,7 @@ import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Admin, AdminDocument } from './schema/admin.schema';
+import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 
 @Injectable()
 export class AdminAuthService {
@@ -10,11 +11,19 @@ export class AdminAuthService {
     private adminModel: Model<AdminDocument>,
   ) {}
 
-  async login() {
-    return 'logout';
+  async login(): Promise<JsonCommunicationType> {
+    return {
+      success: false,
+      typeData: 'status',
+      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
+    };
   }
 
-  async logout() {
-    return 'logout';
+  async logout(): Promise<JsonCommunicationType> {
+    return {
+      success: false,
+      typeData: 'status',
+      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
+    };
   }
 }
