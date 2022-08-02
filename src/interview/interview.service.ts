@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateInterviewDto } from './dto/create-interview.dto';
 import { UpdateInterviewDto } from './dto/update-interview.dto';
+import { Interview } from './entities/interview.entity';
 
 @Injectable()
 export class InterviewService {
@@ -20,7 +21,7 @@ export class InterviewService {
     return `This action updates a #${id} interview`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} interview`;
+  async deleteInterview(id: string) {
+    return await Interview.delete({ id: id });
   }
 }

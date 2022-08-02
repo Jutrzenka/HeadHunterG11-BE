@@ -3,11 +3,16 @@ import { AuthService } from 'src/auth/auth.service';
 import { User } from './entities/user.entity';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { Interview } from 'src/interview/entities/interview.entity';
+import { InterviewService } from '../interview/interview.service';
+import { Student } from './entities/student.entity';
+import { Hr } from './entities/hr.entity';
 
 @Injectable()
 export class UserDataService {
   constructor(
     @Inject(forwardRef(() => AuthService)) private authService: AuthService,
+    @Inject(forwardRef(() => InterviewService))
+    private interviewService: InterviewService,
   ) {}
 
   async activateMariaAccount({
@@ -35,18 +40,6 @@ export class UserDataService {
     }
   }
 
-  // async getAllStudentsForHr(): Promise<User[]> {
-  //   return User.find({
-  //     relations: ['infoStudent', 'infoStudent.interview'],
-  //     where: {
-  //       infoStudent: {
-  //         interview: {
-  //           id: undefined,
-  //         },
-  //       },
-  //     },
-  //   });
-  // }
   async getAllStudentsForHr(): Promise<JsonCommunicationType> {
     try {
       const users = await User.find({
@@ -149,5 +142,63 @@ export class UserDataService {
         data: { code: 'A0001', message: `${err}` },
       };
     }
+  }
+
+  async removeInterviewByHr(
+    id: string,
+    idHr: string,
+  ): Promise<JsonCommunicationType> {
+    const student = await Student.findOne({
+      relations: ['interview'],
+      where: {
+        interview: {
+          id: id,
+        },
+      },
+    });
+    const hr = await Hr.findOne({ where: { id: idHr } });
+    if (student) {
+      student.interview = null;
+      await student.save();
+      hr.reservedStudents -= 1;
+      await hr.save();
+    }
+    await this.interviewService.deleteInterview(id);
+    return {
+      success: true,
+      typeData: 'status',
+      data: null,
+    };
+  }
+
+  async addToInterview(infoStudentId: string, idHr: string): Promise<any> {
+    const hr = await Hr.findOne({ where: { id: idHr } });
+    if (hr.reservedStudents >= 5) {
+      return {
+        success: false,
+        typeData: 'status',
+        data: {
+          code: 'A0003',
+          message: `Maksymalna ilość osób zaproszonych na rozmowę wynosi 5`,
+        },
+      };
+    }
+    const student = await Student.findOne({
+      relations: ['interview'],
+      where: { id: infoStudentId },
+    });
+    if (student.interview === null) {
+      const interview = new Interview();
+      interview.hr = hr;
+      await interview.save();
+
+      student.interview = interview;
+      await student.save();
+
+      hr.reservedStudents += 1;
+      await hr.save();
+    }
+
+    return student;
   }
 }
