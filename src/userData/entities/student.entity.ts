@@ -123,6 +123,7 @@ export class Student extends BaseEntity {
   courses: string;
 
   @OneToOne((type) => Interview)
+  // dla automatycznego pobierania zawsze relacji dodac w opcjach eager:true
   @JoinColumn()
   interview: Interview;
 }
