@@ -171,7 +171,10 @@ export class UserDataService {
     };
   }
 
-  async addToInterview(infoStudentId: string, idHr: string): Promise<any> {
+  async addToInterview(
+    infoStudentId: string,
+    idHr: string,
+  ): Promise<JsonCommunicationType> {
     const hr = await Hr.findOne({ where: { id: idHr } });
     if (hr.reservedStudents >= 5) {
       return {
@@ -199,6 +202,49 @@ export class UserDataService {
       await hr.save();
     }
 
-    return student;
+    return {
+      success: true,
+      typeData: 'status',
+      data: null,
+    };
+  }
+
+  async updateStudentInfo(idUser, body): Promise<JsonCommunicationType> {
+    const user = await User.findOne({
+      relations: [
+        'infoStudent',
+        'infoStudent.interview',
+        'infoStudent.interview.hr',
+      ],
+      where: { idUser },
+    });
+    const infoStudentID = user.infoStudent.id;
+
+    const updateStudentInfo = await Student.update(
+      { id: infoStudentID },
+      {
+        status: body.status,
+        bonusProjectUrls: body.bonusProjectUrls,
+        tel: body.tel,
+        githubUsername: body.githubUsername,
+        portfolioUrls: body.portfolioUrls,
+        projectUrls: body.projectUrls,
+        bio: body.bio,
+        expectedTypeWork: body.expectedTypeWork,
+        targetWorkCity: body.targetWorkCity,
+        expectedContractType: body.expectedContractType,
+        expectedSalary: body.expectedSalary,
+        canTakeApprenticeship: body.canTakeApprenticeship,
+        monthsOfCommercialExp: body.monthsOfCommercialExp,
+        education: body.education,
+        workExperience: body.workExperience,
+        courses: body.courses,
+      },
+    );
+    return {
+      success: true,
+      typeData: 'status',
+      data: null,
+    };
   }
 }

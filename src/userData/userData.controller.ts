@@ -1,4 +1,13 @@
-import { Controller, Delete, Get, Inject, Param, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Inject,
+  Param,
+  Patch,
+  Put,
+} from '@nestjs/common';
 import { UserDataService } from './userData.service';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { User } from './entities/user.entity';
@@ -39,6 +48,14 @@ export class UserDataController {
     return this.userDataService.getStudent(idUser);
   }
 
+  @Patch('/:idUser')
+  async updateStudentInfo(
+    @Param('idUser') idUser: string,
+    @Body() body: any,
+  ): Promise<JsonCommunicationType> {
+    return this.userDataService.updateStudentInfo(idUser, body);
+  }
+
   @Delete('/students/interviews/:id/:idHr')
   async removeInterview(
     @Param('id') id: string,
@@ -51,7 +68,7 @@ export class UserDataController {
   async addStudentToInterview(
     @Param('infoStudentId') infoStudentId: string,
     @Param('idHr') idHr: string,
-  ): Promise<any> {
+  ): Promise<JsonCommunicationType> {
     return this.userDataService.addToInterview(infoStudentId, idHr);
   }
 }

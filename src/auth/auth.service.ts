@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import {forwardRef, Inject, Injectable} from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from 'src/auth/schema/user.schema';
 import { AuthLoginDto } from './dto/auth-login.dto';
@@ -9,17 +9,20 @@ import { UserRole } from '../Utils/types/user/AuthUser.type';
 import { UserTokenService } from './authorization-token/user-token.service';
 import { decryption, encryption } from '../Utils/function/bcrypt';
 import { UserDataService } from '../userData/userData.service';
-import {Student} from "../userData/entities/student.entity";
-import {Hr} from "../userData/entities/hr.entity";
-import {JsonCommunicationType} from "../Utils/types/data/JsonCommunicationType";
+import { Student } from '../userData/entities/student.entity';
+import { Hr } from '../userData/entities/hr.entity';
+import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
+import { Status } from '../Utils/types/user/Student.type';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
-    @Inject(forwardRef(() => UserTokenService)) private tokenService: UserTokenService,
-    @Inject(forwardRef(() => UserDataService)) private userDataService: UserDataService,
+    @Inject(forwardRef(() => UserTokenService))
+    private tokenService: UserTokenService,
+    @Inject(forwardRef(() => UserDataService))
+    private userDataService: UserDataService,
   ) {}
 
   // Dopisywanie wymaganych danych podczas pierwszego logowania
@@ -80,6 +83,7 @@ export class AuthService {
       if (mongoDbData.role === UserRole.Student) {
         const studentInfo = new Student();
         mariaDbData.infoStudent = studentInfo;
+        studentInfo.status = Status.Active;
         await mariaDbData.save();
       }
 
