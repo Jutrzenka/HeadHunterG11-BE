@@ -10,15 +10,15 @@ import { UserTokenService } from './authorization-token/user-token.service';
 import { decryption, encryption } from '../Utils/function/bcrypt';
 import { UserDataService } from '../userData/userData.service';
 import { Student } from '../userData/entities/student.entity';
-import { Hr } from '../userData/entities/hr.entity';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { Status } from '../Utils/types/user/Student.type';
+import { Hr } from 'src/userData/entities/hr.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name)
-    private userModel: Model<UserDocument>,
+    private authModel: Model<UserDocument>,
     @Inject(forwardRef(() => UserTokenService))
     private tokenService: UserTokenService,
     @Inject(forwardRef(() => UserDataService))
@@ -50,7 +50,7 @@ export class AuthService {
       password: hashPassword.data,
       registerCode: null,
     };
-    return this.userModel.findOneAndUpdate(filter, updateData, {
+    return this.authModel.findOneAndUpdate(filter, updateData, {
       new: true,
     });
   }
@@ -80,6 +80,7 @@ export class AuthService {
         firstName,
         lastName,
       });
+
       if (mongoDbData.role === UserRole.Student) {
         const studentInfo = new Student();
         mariaDbData.infoStudent = studentInfo;
@@ -109,7 +110,7 @@ export class AuthService {
 
   async login(req: AuthLoginDto, res: Response) {
     try {
-      const user = await this.userModel.findOne({
+      const user = await this.authModel.findOne({
         email: req.email,
       });
       const isUser = await decryption(req.pwd, user.password);
@@ -169,7 +170,7 @@ export class AuthService {
 
   async logout(user: User, res: Response) {
     try {
-      await this.userModel.findOneAndUpdate(
+      await this.authModel.findOneAndUpdate(
         { idUser: user.idUser },
         { accessToken: null },
       );

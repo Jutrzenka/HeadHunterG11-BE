@@ -85,6 +85,13 @@ export class UserDataService {
         ],
         where: { idUser: idUser },
       });
+      if (student === null) {
+        return {
+          success: false,
+          typeData: 'status',
+          data: { code: 'A0001', message: 'User not found' },
+        };
+      }
       return {
         success: true,
         typeData: 'element',
@@ -97,7 +104,7 @@ export class UserDataService {
       return {
         success: false,
         typeData: 'status',
-        data: { code: 'A0001', message: 'Not found this User' },
+        data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
       };
     }
   }

@@ -7,10 +7,11 @@ import {
   Param,
   Patch,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { UserDataService } from './userData.service';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
-import { User } from './entities/user.entity';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('/api/user')
 export class UserDataController {
@@ -19,16 +20,8 @@ export class UserDataController {
     private userDataService: UserDataService,
   ) {}
 
-  // @Get('/students')
-  // async getUser(): Promise<JsonCommunicationType> {
-  //   // Tymczasowa zwrotka
-  //   return {
-  //     success: false,
-  //     typeData: 'status',
-  //     data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-  //   };
-  // }
   @Get('/students')
+  @UseGuards(AuthGuard('jwtStudent'))
   getAllStudents(): Promise<JsonCommunicationType> {
     return this.userDataService.getAllStudentsForHr();
   }
@@ -41,14 +34,15 @@ export class UserDataController {
     return this.userDataService.getAllInterviewsForHr(idHr);
   }
 
-  @Get('/:idUser')
+  @Get('/students/:idUser')
   async getStudent(
     @Param('idUser') idUser: string,
   ): Promise<JsonCommunicationType> {
     return this.userDataService.getStudent(idUser);
   }
 
-  @Patch('/:idUser')
+  // TODO KONIECZNIE ZROBIĆ WALIDACJĘ
+  @Patch('/students/:idUser')
   async updateStudentInfo(
     @Param('idUser') idUser: string,
     @Body() body: any,
