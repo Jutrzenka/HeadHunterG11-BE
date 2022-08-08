@@ -1,10 +1,12 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-jwt';
-import configuration from '../Utils/config/configuration';
+import configuration from '../../Utils/config/configuration';
+import { UserRole } from '../../Utils/types/user/AuthUser.type';
 
-export interface JwtAdminPayload {
+export interface JwtPayload {
   id: string;
+  role: UserRole;
 }
 
 function cookieExtractor(req: any): null | string {
@@ -12,7 +14,7 @@ function cookieExtractor(req: any): null | string {
 }
 
 @Injectable()
-export class JwtAdminStrategy extends PassportStrategy(Strategy, 'jwtAdmin') {
+export class JwtAdminStrategy extends PassportStrategy(Strategy, 'jwtStudent') {
   constructor() {
     super({
       jwtFromRequest: cookieExtractor,
@@ -20,18 +22,19 @@ export class JwtAdminStrategy extends PassportStrategy(Strategy, 'jwtAdmin') {
     });
   }
 
-  async validate(payload: JwtAdminPayload, done: (error, user) => void) {
-    if (!payload || !payload.id) {
+  async validate(payload: JwtPayload, done: (error, user) => void) {
+    if (!payload || !payload.id || payload.role !== UserRole.Student) {
       return done(new UnauthorizedException(), false);
     }
-    // tutaj chyba tak bedzie ten schemat z mongo admina adminModel
-    const admin = await this.adminModel.findOne({
+
+    const user = await this.userModel.findOne({
       accessToken: payload.id,
+      role: payload.role,
     });
 
-    if (!admin) {
+    if (!user) {
       return done(new UnauthorizedException(), false);
     }
-    done(null, admin);
+    done(null, user);
   }
 }

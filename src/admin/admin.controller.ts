@@ -1,34 +1,69 @@
-import { Body, Controller, Post, Put, Res } from '@nestjs/common';
-//import { UserRole } from '../Utils/types/user/AuthUser.type';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { AdminService } from './admin.service';
-import { Response } from 'express';
+import { UserRole } from 'src/Utils/types/export';
+import { AdminAuthService } from './admin-auth.service';
 
-@Controller('admin')
+@Controller('/api/admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
-  // Przyjmowanie danych z formularza i odesłanie tokenu JWT
-  @Post('/login')
-  async login(
-    @Body() req: { email: string; pwd: string },
-    @Res() res: Response,
-  ) {
-    return this.adminService.login(req, res);
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly adminAuthService: AdminAuthService,
+  ) {}
+
+  @Post('/auth/login')
+  async login(): Promise<JsonCommunicationType> {
+    return this.adminAuthService.login();
   }
 
   // Wylogowywanie - resetowanie tokenów itd.
-  @Post('/logout')
-  async logout() {
-    return 'Logout';
+  @Post('/auth/logout')
+  async logout(): Promise<JsonCommunicationType> {
+    return this.adminAuthService.logout();
   }
 
-  // Tworzenie uzytkownika - to tylko testowo. Potem będzie to wykorzystywane jedynie przez admina
+  @Get('/students')
+  async allStudents(): Promise<JsonCommunicationType> {
+    return this.adminService.getAllStudents();
+  }
+
+  @Get('/headhunters')
+  async allHeadhunters(): Promise<JsonCommunicationType> {
+    return this.adminService.getAllHeadhunters();
+  }
+
+  @Delete('/user/:id')
+  async deleteUser(): Promise<JsonCommunicationType> {
+    return this.adminService.deleteUser();
+  }
+
+  // Pamiętać o zresetowaniu registerCode i wysłaniu ponownie e-maila
+  @Patch('/user/:id')
+  async editEmailUser(): Promise<JsonCommunicationType> {
+    return this.adminService.editEmail();
+  }
+
+  @Post('/user/:id')
+  async newRegisterCode(): Promise<JsonCommunicationType> {
+    return this.adminService.newRegisterCode();
+  }
+
+  // Tworzenie użytkownika
   @Put('/create')
-  async createUser(): //@Body() body: { email: string; role: UserRole },
-  Promise<JsonCommunicationType> {
-    //const { email, role } = body;
+  async createOneUser(
+    @Body() body: { email: string; role: UserRole },
+  ): Promise<JsonCommunicationType> {
+    const { email, role } = body;
     try {
-      //await this.authService.createUser({ role, email });
+      await this.adminService.createUser({ email, role });
       return {
         success: true,
         typeData: 'status',
@@ -51,5 +86,27 @@ export class AdminController {
         data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
       };
     }
+  }
+
+  @Put('/create/csv')
+  async createCsvUser(): Promise<JsonCommunicationType> {
+    // TODO zapętlić: await this.adminService.createUser({ email, role });
+    // Tymczasowa zwrotka
+    return {
+      success: false,
+      typeData: 'status',
+      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
+    };
+  }
+
+  @Put('/create/json')
+  async createJsonUser(): Promise<JsonCommunicationType> {
+    // TODO zapętlić: await this.adminService.createUser({ email, role });
+    // Tymczasowa zwrotka
+    return {
+      success: false,
+      typeData: 'status',
+      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
+    };
   }
 }

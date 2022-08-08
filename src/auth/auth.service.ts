@@ -1,24 +1,32 @@
 import { Model } from 'mongoose';
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from 'src/Utils/schema/user.schema';
+import { User, UserDocument } from 'src/auth/schema/user.schema';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { Response } from 'express';
 import configuration from '../Utils/config/configuration';
 import { UserRole } from '../Utils/types/user/AuthUser.type';
-import { TokenService } from './token.service';
+import { UserTokenService } from './authorization-token/user-token.service';
 import { decryption, encryption } from '../Utils/function/bcrypt';
+import { UserDataService } from '../userData/userData.service';
+import { Student } from '../userData/entities/student.entity';
+import { Hr } from '../userData/entities/hr.entity';
+import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
+import { Status } from '../Utils/types/user/Student.type';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
-    private tokenService: TokenService,
+    @Inject(forwardRef(() => UserTokenService))
+    private tokenService: UserTokenService,
+    @Inject(forwardRef(() => UserDataService))
+    private userDataService: UserDataService,
   ) {}
 
   // Dopisywanie wymaganych danych podczas pierwszego logowania
-  async register({
+  async activateMongoAccount({
     login,
     newLogin,
     password,
@@ -45,6 +53,58 @@ export class AuthService {
     return this.userModel.findOneAndUpdate(filter, updateData, {
       new: true,
     });
+  }
+
+  async activateFullAccount(param, body): Promise<JsonCommunicationType> {
+    const { login, registerCode } = param;
+    const { newLogin, password, firstName, lastName } = body;
+    try {
+      const mongoDbData = await this.activateMongoAccount({
+        login,
+        newLogin,
+        password,
+        registerCode,
+      });
+      if (!mongoDbData) {
+        return {
+          success: false,
+          typeData: 'status',
+          data: {
+            code: 'A0002',
+            message: 'Błędny link do pierwszej rejestracji',
+          },
+        };
+      }
+      const mariaDbData = await this.userDataService.activateMariaAccount({
+        idUser: mongoDbData.idUser,
+        firstName,
+        lastName,
+      });
+      if (mongoDbData.role === UserRole.Student) {
+        const studentInfo = new Student();
+        mariaDbData.infoStudent = studentInfo;
+        studentInfo.status = Status.Active;
+        await mariaDbData.save();
+      }
+
+      if (mongoDbData.role === UserRole.HeadHunter) {
+        const hrInfo = new Hr();
+        mariaDbData.infoHR = hrInfo;
+        await mariaDbData.save();
+      }
+
+      return {
+        success: true,
+        typeData: 'status',
+        data: null,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        typeData: 'status',
+        data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
+      };
+    }
   }
 
   async login(req: AuthLoginDto, res: Response) {
@@ -133,4 +193,8 @@ export class AuthService {
       };
     }
   }
+
+  async editEmail() {}
+
+  async newRegisterCode() {}
 }

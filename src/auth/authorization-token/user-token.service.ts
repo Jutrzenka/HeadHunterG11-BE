@@ -1,18 +1,18 @@
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from 'src/Utils/schema/user.schema';
+import { User, UserDocument } from 'src/auth/schema/user.schema';
 import { sign } from 'jsonwebtoken';
 import { JwtPayload } from './jwtStudent.strategy';
 import { v4 as uuid } from 'uuid';
-import configuration from '../Utils/config/configuration';
-import { UserRole } from '../Utils/types/user/AuthUser.type';
+import configuration from '../../Utils/config/configuration';
+import { UserRole } from '../../Utils/types/user/AuthUser.type';
 
 @Injectable()
-export class TokenService {
+export class UserTokenService {
   constructor(
     @InjectModel(User.name)
-    private userModel: Model<UserDocument>,
+    private authModel: Model<UserDocument>,
   ) {}
 
   public createToken(
@@ -38,9 +38,9 @@ export class TokenService {
     let userWithThisToken = null;
     do {
       token = uuid();
-      userWithThisToken = await this.userModel.findOne({ accessToken: token });
+      userWithThisToken = await this.authModel.findOne({ accessToken: token });
     } while (!!userWithThisToken);
-    await this.userModel.findOneAndUpdate(
+    await this.authModel.findOneAndUpdate(
       { idUser: user.idUser },
       { accessToken: token },
     );

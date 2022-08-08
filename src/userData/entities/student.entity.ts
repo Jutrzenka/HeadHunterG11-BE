@@ -7,25 +7,28 @@ import {
   JoinColumn,
   OneToOne,
   PrimaryColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Status, TypeWork, ContractType } from '../../Utils/types/export';
 
 @Entity()
 export class Student extends BaseEntity {
-  @PrimaryColumn({
-    length: 36,
-    primary: true,
-    nullable: false,
-    unique: true,
-    default: uuid(),
-  })
+  // @PrimaryColumn({
+  //   length: 36,
+  //   primary: true,
+  //   nullable: false,
+  //   unique: true,
+  //   default: uuid(),
+  // })
+  // id: string;
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({
-    length: 36,
-    nullable: false,
-  })
-  idUser: string;
+  // @Column({
+  //   length: 36,
+  //   nullable: false,
+  // })
+  // idUser: string;
 
   @Column({
     nullable: true,
@@ -120,6 +123,7 @@ export class Student extends BaseEntity {
   courses: string;
 
   @OneToOne((type) => Interview)
+  // dla automatycznego pobierania zawsze relacji dodac w opcjach eager:true
   @JoinColumn()
   interview: Interview;
 }
