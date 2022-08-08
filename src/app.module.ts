@@ -5,8 +5,6 @@ import configuration from './Utils/config/configuration';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserDataModule } from './userData/userData.module';
 import { InterviewModule } from './interview/interview.module';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -43,7 +41,5 @@ import { AdminModule } from './admin/admin.module';
       rootPath: join(__dirname, '..', '/public/build'),
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
