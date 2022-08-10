@@ -9,10 +9,11 @@ import { UserRole } from '../Utils/types/user/AuthUser.type';
 import { UserTokenService } from './authorization-token/user-token.service';
 import { decryption, encryption } from '../Utils/function/bcrypt';
 import { UserDataService } from '../userData/userData.service';
-import { Student } from '../userData/entities/student.entity';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
-import { Status } from '../Utils/types/user/Student.type';
-import { Hr } from 'src/userData/entities/hr.entity';
+import {
+  generateErrorResponse,
+  generateSuccessResponse,
+} from '../Utils/function/generateJsonResponse/generateJsonResponse';
 
 @Injectable()
 export class AuthService {
@@ -67,14 +68,7 @@ export class AuthService {
         registerCode,
       });
       if (!mongoDbData) {
-        return {
-          success: false,
-          typeData: 'status',
-          data: {
-            code: 'A0002',
-            message: 'Błędny link do pierwszej rejestracji',
-          },
-        };
+        return generateErrorResponse('C000');
       }
       const mariaDbData = await this.userDataService.activateMariaAccount({
         idUser: mongoDbData.idUser,
@@ -95,25 +89,12 @@ export class AuthService {
       //   await mariaDbData.save();
       // }
 
-      return {
-        success: true,
-        typeData: 'status',
-        data: null,
-      };
+      return generateSuccessResponse();
     } catch (err) {
-      console.log(err);
       if (err.code === 11000) {
-        return {
-          success: false,
-          typeData: 'status',
-          data: { code: 'A0001', message: 'Ten login jest zajęty' },
-        };
+        return generateErrorResponse('C003');
       }
-      return {
-        success: false,
-        typeData: 'status',
-        data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-      };
+      return generateErrorResponse('A000');
     }
   }
 
@@ -124,11 +105,7 @@ export class AuthService {
       });
       const isUser = await decryption(req.pwd, user.password);
       if (!isUser) {
-        return {
-          success: false,
-          typeData: 'status',
-          data: { code: 404, message: 'Not found this User' },
-        };
+        return generateErrorResponse('D000');
       }
 
       if (user.role === UserRole.Student) {
@@ -143,11 +120,7 @@ export class AuthService {
             domain: configuration().server.domain,
             httpOnly: true,
           })
-          .json({
-            success: true,
-            typeData: 'status',
-            data: null,
-          });
+          .json(generateSuccessResponse());
       }
 
       if (user.role === UserRole.HeadHunter) {
@@ -169,11 +142,7 @@ export class AuthService {
           });
       }
     } catch (e) {
-      return {
-        success: false,
-        typeData: 'status',
-        data: { code: 404, message: e.message },
-      };
+      return generateErrorResponse('D000');
     }
   }
 
@@ -189,22 +158,9 @@ export class AuthService {
         httpOnly: true,
       });
       // return res.json({ ok: true });
-      return res.json({
-        success: true,
-        typeData: 'status',
-        data: null,
-      });
+      return res.json(generateSuccessResponse());
     } catch (e) {
-      // return res.json({ error: e.message });
-      return {
-        success: false,
-        typeData: 'status',
-        data: { code: 404, message: e.message },
-      };
+      return generateErrorResponse('A000');
     }
   }
-
-  async editEmail() {}
-
-  async newRegisterCode() {}
 }
