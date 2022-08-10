@@ -12,6 +12,10 @@ import { AdminService } from './admin.service';
 import { UserRole } from 'src/Utils/types/export';
 import { AdminAuthService } from './admin-auth.service';
 import { validateEmail } from '../Utils/function/validateEmail';
+import {
+  generateErrorResponse,
+  generateSuccessResponse,
+} from '../Utils/function/generateJsonResponse/generateJsonResponse';
 
 @Controller('/api/admin')
 export class AdminController {
@@ -37,11 +41,7 @@ export class AdminController {
   ): Promise<JsonCommunicationType> {
     const { filter, limit, page } = body;
     if (limit > 50 || limit < 1 || page < 1) {
-      return {
-        success: false,
-        typeData: 'status',
-        data: { code: 'A0001', message: 'Błędne body' },
-      };
+      return generateErrorResponse('C002');
     }
     return this.adminService.getAllStudents({
       filter,
@@ -56,11 +56,7 @@ export class AdminController {
   ): Promise<JsonCommunicationType> {
     const { filter, limit, page } = body;
     if (limit > 50 || limit < 1 || page < 1) {
-      return {
-        success: false,
-        typeData: 'status',
-        data: { code: 'A0001', message: 'Błędne body' },
-      };
+      return generateErrorResponse('C002');
     }
     return this.adminService.getAllHeadhunters({
       filter,
@@ -96,38 +92,16 @@ export class AdminController {
       (role !== UserRole.Student && role !== UserRole.HeadHunter) ||
       !validateEmail(email)
     ) {
-      return {
-        success: false,
-        typeData: 'status',
-        data: {
-          code: 'A0003',
-          message: 'Błędne dane',
-        },
-      };
+      return generateErrorResponse('C002');
     }
     try {
       await this.adminService.createUser({ email, role });
-      return {
-        success: true,
-        typeData: 'status',
-        data: null,
-      };
+      return generateSuccessResponse();
     } catch (err) {
       if (err.code === 11000) {
-        return {
-          success: false,
-          typeData: 'status',
-          data: {
-            code: 'A0003',
-            message: 'Unikalne dane nie mogą się duplikować',
-          },
-        };
+        return generateErrorResponse('C001');
       }
-      return {
-        success: false,
-        typeData: 'status',
-        data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-      };
+      return generateErrorResponse('A000');
     }
   }
 
@@ -135,21 +109,13 @@ export class AdminController {
   async createCsvUser(): Promise<JsonCommunicationType> {
     // TODO zapętlić: await this.adminService.createUser({ email, role });
     // Tymczasowa zwrotka
-    return {
-      success: false,
-      typeData: 'status',
-      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-    };
+    return generateErrorResponse('B000');
   }
 
   @Put('/create/json')
   async createJsonUser(): Promise<JsonCommunicationType> {
     // TODO zapętlić: await this.adminService.createUser({ email, role });
     // Tymczasowa zwrotka
-    return {
-      success: false,
-      typeData: 'status',
-      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-    };
+    return generateErrorResponse('B000');
   }
 }

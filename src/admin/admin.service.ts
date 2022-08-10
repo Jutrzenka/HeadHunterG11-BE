@@ -6,6 +6,7 @@ import { v4 as uuid } from 'uuid';
 import { UserRole } from '../Utils/types/user/AuthUser.type';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { searchUsersInMongo } from '../Utils/function/searchUsersInMongo';
+import { generateErrorResponse } from '../Utils/function/generateJsonResponse/generateJsonResponse';
 
 @Injectable()
 export class AdminService {
@@ -47,11 +48,7 @@ export class AdminService {
         this.userModel,
       );
     } catch (err) {
-      return {
-        success: false,
-        typeData: 'status',
-        data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-      };
+      return generateErrorResponse('A000');
     }
   }
 
@@ -70,35 +67,19 @@ export class AdminService {
         this.userModel,
       );
     } catch (err) {
-      return {
-        success: false,
-        typeData: 'status',
-        data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-      };
+      return generateErrorResponse('A000');
     }
   }
 
   async deleteUser(): Promise<JsonCommunicationType> {
-    return {
-      success: false,
-      typeData: 'status',
-      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-    };
+    return generateErrorResponse('B000');
   }
 
   async editEmail(): Promise<JsonCommunicationType> {
-    return {
-      success: false,
-      typeData: 'status',
-      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-    };
+    return generateErrorResponse('B000');
   }
 
   async newRegisterCode(): Promise<JsonCommunicationType> {
-    return {
-      success: false,
-      typeData: 'status',
-      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-    };
+    return generateErrorResponse('B000');
   }
 }
