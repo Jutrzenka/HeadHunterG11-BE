@@ -49,6 +49,7 @@ export class AuthService {
       login: newLogin,
       password: hashPassword.data,
       registerCode: null,
+      activeAccount: true,
     };
     return this.authModel.findOneAndUpdate(filter, updateData, {
       new: true,
@@ -81,18 +82,18 @@ export class AuthService {
         lastName,
       });
 
-      if (mongoDbData.role === UserRole.Student) {
-        const studentInfo = new Student();
-        mariaDbData.infoStudent = studentInfo;
-        studentInfo.status = Status.Active;
-        await mariaDbData.save();
-      }
-
-      if (mongoDbData.role === UserRole.HeadHunter) {
-        const hrInfo = new Hr();
-        mariaDbData.infoHR = hrInfo;
-        await mariaDbData.save();
-      }
+      // if (mongoDbData.role === UserRole.Student) {
+      //   const studentInfo = new Student();
+      //   mariaDbData.infoStudent = studentInfo;
+      //   studentInfo.status = Status.Active;
+      //   await mariaDbData.save();
+      // }
+      //
+      // if (mongoDbData.role === UserRole.HeadHunter) {
+      //   const hrInfo = new Hr();
+      //   mariaDbData.infoHR = hrInfo;
+      //   await mariaDbData.save();
+      // }
 
       return {
         success: true,
@@ -100,6 +101,14 @@ export class AuthService {
         data: null,
       };
     } catch (err) {
+      console.log(err);
+      if (err.code === 11000) {
+        return {
+          success: false,
+          typeData: 'status',
+          data: { code: 'A0001', message: 'Ten login jest zajęty' },
+        };
+      }
       return {
         success: false,
         typeData: 'status',

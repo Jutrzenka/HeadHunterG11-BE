@@ -26,6 +26,7 @@ export class AdminService {
       role,
       email: email.toLowerCase().trim(),
       login: email.toLowerCase().split('@')[0].concat('-', uuid()),
+      activeAccount: false,
       registerCode: uuid(),
     });
     return newUser.save();

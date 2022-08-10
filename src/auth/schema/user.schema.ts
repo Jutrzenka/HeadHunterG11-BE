@@ -17,6 +17,8 @@ export class User extends Document {
   password: string | null;
   @Prop({ required: false, default: null })
   accessToken: string | null;
+  @Prop({ required: true })
+  activeAccount: boolean;
   @Prop({ required: false })
   registerCode: string | null;
 }

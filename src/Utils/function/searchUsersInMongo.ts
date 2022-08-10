@@ -16,16 +16,19 @@ export const searchUsersInMongo = async (
   if (!filter) {
     countElements = await userModel.find({ role }).countDocuments().exec();
     elements = await userModel
-      .find({ role }, null, {
-        limit,
-        skip: limit * (page - 1),
-      })
+      .find(
+        { role },
+        { _id: 0, password: 0, accessToken: 0, registerCode: 0, __v: 0 },
+        {
+          limit,
+          skip: limit * (page - 1),
+        },
+      )
       .exec();
   } else {
     countElements = await userModel
       .find(
         { $and: [{ role }, { $or: [{ email: filter }, { login: filter }] }] },
-        null,
         {
           limit,
           skip: limit * (page - 1),
@@ -36,7 +39,7 @@ export const searchUsersInMongo = async (
     elements = await userModel
       .find(
         { $and: [{ role }, { $or: [{ email: filter }, { login: filter }] }] },
-        null,
+        { _id: 0, password: 0, accessToken: 0, registerCode: 0, __v: 0 },
         {
           limit,
           skip: limit * (page - 1),
@@ -44,6 +47,7 @@ export const searchUsersInMongo = async (
       )
       .exec();
   }
+
   return {
     success: true,
     typeData: 'array',
