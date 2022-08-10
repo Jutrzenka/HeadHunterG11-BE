@@ -5,6 +5,7 @@ import { User, UserDocument } from 'src/auth/schema/user.schema';
 import { v4 as uuid } from 'uuid';
 import { UserRole } from '../Utils/types/user/AuthUser.type';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
+import { searchUsersInMongo } from '../Utils/function/searchUsersInMongo';
 
 @Injectable()
 export class AdminService {
@@ -23,27 +24,57 @@ export class AdminService {
     const newUser = await this.userModel.create({
       idUser: uuid(),
       role,
-      email,
-      login: email.toUpperCase().split('@')[0].concat('-', uuid()),
+      email: email.toLowerCase().trim(),
+      login: email.toLowerCase().split('@')[0].concat('-', uuid()),
       registerCode: uuid(),
     });
     return newUser.save();
   }
 
-  async getAllStudents(): Promise<JsonCommunicationType> {
-    return {
-      success: false,
-      typeData: 'status',
-      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-    };
+  async getAllStudents({
+    limit,
+    page,
+    filter,
+  }: {
+    limit: number;
+    page: number;
+    filter: string;
+  }): Promise<JsonCommunicationType> {
+    try {
+      return await searchUsersInMongo(
+        { role: UserRole.Student, limit, page, filter },
+        this.userModel,
+      );
+    } catch (err) {
+      return {
+        success: false,
+        typeData: 'status',
+        data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
+      };
+    }
   }
 
-  async getAllHeadhunters(): Promise<JsonCommunicationType> {
-    return {
-      success: false,
-      typeData: 'status',
-      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-    };
+  async getAllHeadhunters({
+    limit,
+    page,
+    filter,
+  }: {
+    limit: number;
+    page: number;
+    filter: string;
+  }): Promise<JsonCommunicationType> {
+    try {
+      return await searchUsersInMongo(
+        { role: UserRole.HeadHunter, limit, page, filter },
+        this.userModel,
+      );
+    } catch (err) {
+      return {
+        success: false,
+        typeData: 'status',
+        data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
+      };
+    }
   }
 
   async deleteUser(): Promise<JsonCommunicationType> {

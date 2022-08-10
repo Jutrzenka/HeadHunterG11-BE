@@ -11,6 +11,7 @@ import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType
 import { AdminService } from './admin.service';
 import { UserRole } from 'src/Utils/types/export';
 import { AdminAuthService } from './admin-auth.service';
+import { validateEmail } from '../Utils/function/validateEmail';
 
 @Controller('/api/admin')
 export class AdminController {
@@ -31,13 +32,41 @@ export class AdminController {
   }
 
   @Get('/students')
-  async allStudents(): Promise<JsonCommunicationType> {
-    return this.adminService.getAllStudents();
+  async allStudents(
+    @Body() body: { filter: string; limit: number; page: number },
+  ): Promise<JsonCommunicationType> {
+    const { filter, limit, page } = body;
+    if (limit > 50 || limit < 1 || page < 1) {
+      return {
+        success: false,
+        typeData: 'status',
+        data: { code: 'A0001', message: 'Błędne body' },
+      };
+    }
+    return this.adminService.getAllStudents({
+      filter,
+      limit,
+      page,
+    });
   }
 
   @Get('/headhunters')
-  async allHeadhunters(): Promise<JsonCommunicationType> {
-    return this.adminService.getAllHeadhunters();
+  async allHeadhunters(
+    @Body() body: { filter: string; limit: number; page: number },
+  ): Promise<JsonCommunicationType> {
+    const { filter, limit, page } = body;
+    if (limit > 50 || limit < 1 || page < 1) {
+      return {
+        success: false,
+        typeData: 'status',
+        data: { code: 'A0001', message: 'Błędne body' },
+      };
+    }
+    return this.adminService.getAllHeadhunters({
+      filter,
+      limit,
+      page,
+    });
   }
 
   @Delete('/user/:id')
@@ -62,6 +91,20 @@ export class AdminController {
     @Body() body: { email: string; role: UserRole },
   ): Promise<JsonCommunicationType> {
     const { email, role } = body;
+    if (
+      !role ||
+      (role !== UserRole.Student && role !== UserRole.HeadHunter) ||
+      !validateEmail(email)
+    ) {
+      return {
+        success: false,
+        typeData: 'status',
+        data: {
+          code: 'A0003',
+          message: 'Błędne dane',
+        },
+      };
+    }
     try {
       await this.adminService.createUser({ email, role });
       return {
