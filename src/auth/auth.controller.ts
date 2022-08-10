@@ -6,6 +6,7 @@ import { UserObj } from '../Utils/decorators/userobj.decorator';
 import { User } from './schema/user.schema';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { UserDataService } from 'src/userData/userData.service';
+import { generateErrorResponse } from '../Utils/function/generateJsonResponse/generateJsonResponse';
 
 @Controller('/api/auth')
 export class AuthController {
@@ -22,26 +23,18 @@ export class AuthController {
   ): Promise<JsonCommunicationType> {
     this.authService.login(req, res);
     // Tymczasowa zwrotka
-    return {
-      success: false,
-      typeData: 'status',
-      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-    };
+    return generateErrorResponse('B000');
   }
 
   // Wylogowywanie - resetowanie tokenów itd.
-  @Get('/logout')
+  @Post('/logout')
   async logout(
     @UserObj() user: User,
     @Res() res: Response,
   ): Promise<JsonCommunicationType> {
     this.authService.logout(user, res);
     // Tymczasowa zwrotka
-    return {
-      success: false,
-      typeData: 'status',
-      data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-    };
+    return generateErrorResponse('B000');
   }
 
   @Patch('/register/:login/:registerCode')

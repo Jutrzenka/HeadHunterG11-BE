@@ -28,7 +28,7 @@ import { AdminModule } from './admin/admin.module';
       database: configuration().databaseMaria.name,
       entities: ['dist/**/**.entity{.ts,.js}'],
       bigNumberStrings: false,
-      logging: true,
+      logging: false,
       synchronize: true,
     }),
     // Nasze moduły
