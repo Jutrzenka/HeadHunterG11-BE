@@ -6,6 +6,8 @@ import {
   Patch,
   Post,
   Put,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { AdminService } from './admin.service';
@@ -16,6 +18,11 @@ import {
   generateErrorResponse,
   generateSuccessResponse,
 } from '../Utils/function/generateJsonResponse/generateJsonResponse';
+import { Response } from 'express';
+import { AdminAuthLoginDto } from './dto/admin-auth-login.dto';
+import { UserObj } from '../Utils/decorators/userobj.decorator';
+import { Admin } from './schema/admin.schema';
+import { JwtAdminGuard } from './authorization-token/guard/jwtAdmin.guard';
 
 @Controller('/api/admin')
 export class AdminController {
@@ -25,17 +32,22 @@ export class AdminController {
   ) {}
 
   @Post('/auth/login')
-  async login(): Promise<JsonCommunicationType> {
-    return this.adminAuthService.login();
+  async login(
+    @Body() req: AdminAuthLoginDto,
+    @Res() res: Response,
+  ): Promise<any> {
+    return this.adminAuthService.adminLogin(req, res);
   }
 
   // Wylogowywanie - resetowanie tokenów itd.
   @Post('/auth/logout')
-  async logout(): Promise<JsonCommunicationType> {
-    return this.adminAuthService.logout();
+  @UseGuards(JwtAdminGuard)
+  async logout(@UserObj() admin: Admin, @Res() res: Response): Promise<any> {
+    return this.adminAuthService.adminLogout(admin, res);
   }
 
   @Get('/students')
+  @UseGuards(JwtAdminGuard)
   async allStudents(
     @Body() body: { filter: string; limit: number; page: number },
   ): Promise<JsonCommunicationType> {
@@ -51,6 +63,7 @@ export class AdminController {
   }
 
   @Get('/headhunters')
+  @UseGuards(JwtAdminGuard)
   async allHeadhunters(
     @Body() body: { filter: string; limit: number; page: number },
   ): Promise<JsonCommunicationType> {
@@ -66,23 +79,27 @@ export class AdminController {
   }
 
   @Delete('/user/:id')
+  @UseGuards(JwtAdminGuard)
   async deleteUser(): Promise<JsonCommunicationType> {
     return this.adminService.deleteUser();
   }
 
   // Pamiętać o zresetowaniu registerCode i wysłaniu ponownie e-maila
   @Patch('/user/:id')
+  @UseGuards(JwtAdminGuard)
   async editEmailUser(): Promise<JsonCommunicationType> {
     return this.adminService.editEmail();
   }
 
   @Post('/user/:id')
+  @UseGuards(JwtAdminGuard)
   async newRegisterCode(): Promise<JsonCommunicationType> {
     return this.adminService.newRegisterCode();
   }
 
   // Tworzenie użytkownika
   @Put('/create')
+  @UseGuards(JwtAdminGuard)
   async createOneUser(
     @Body() body: { email: string; role: UserRole },
   ): Promise<JsonCommunicationType> {
@@ -106,6 +123,7 @@ export class AdminController {
   }
 
   @Put('/create/csv')
+  @UseGuards(JwtAdminGuard)
   async createCsvUser(): Promise<JsonCommunicationType> {
     // TODO zapętlić: await this.adminService.createUser({ email, role });
     // Tymczasowa zwrotka
@@ -113,6 +131,7 @@ export class AdminController {
   }
 
   @Put('/create/json')
+  @UseGuards(JwtAdminGuard)
   async createJsonUser(): Promise<JsonCommunicationType> {
     // TODO zapętlić: await this.adminService.createUser({ email, role });
     // Tymczasowa zwrotka

@@ -3,6 +3,9 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-jwt';
 import configuration from '../../Utils/config/configuration';
 import { UserRole } from '../../Utils/types/user/AuthUser.type';
+import { InjectModel } from '@nestjs/mongoose';
+import { User, UserDocument } from '../schema/user.schema';
+import { Model } from 'mongoose';
 
 export interface JwtPayload {
   id: string;
@@ -15,7 +18,10 @@ function cookieExtractor(req: any): null | string {
 
 @Injectable()
 export class JwtHrStrategy extends PassportStrategy(Strategy, 'jwtHr') {
-  constructor() {
+  constructor(
+    @InjectModel(User.name)
+    private userModel: Model<UserDocument>,
+  ) {
     super({
       jwtFromRequest: cookieExtractor,
       secretOrKey: configuration().server.secretKey,

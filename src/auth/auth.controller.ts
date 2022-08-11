@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Patch,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { Response } from 'express';
@@ -7,6 +15,7 @@ import { User } from './schema/user.schema';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { UserDataService } from 'src/userData/userData.service';
 import { generateErrorResponse } from '../Utils/function/generateJsonResponse/generateJsonResponse';
+import { JwtAllGuard } from './authorization-token/guard/jwtAll.guard';
 
 @Controller('/api/auth')
 export class AuthController {
@@ -28,13 +37,9 @@ export class AuthController {
 
   // Wylogowywanie - resetowanie tokenów itd.
   @Post('/logout')
-  async logout(
-    @UserObj() user: User,
-    @Res() res: Response,
-  ): Promise<JsonCommunicationType> {
-    this.authService.logout(user, res);
-    // Tymczasowa zwrotka
-    return generateErrorResponse('B000');
+  @UseGuards(JwtAllGuard)
+  async logout(@UserObj() user: User, @Res() res: Response): Promise<any> {
+    return this.authService.logout(user, res);
   }
 
   @Patch('/register/:login/:registerCode')

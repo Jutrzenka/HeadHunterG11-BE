@@ -2,10 +2,9 @@ import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { sign } from 'jsonwebtoken';
-import { JwtPayload } from './jwtAdmin.strategy';
+import { JwtAdminPayload } from './jwtAdmin.strategy';
 import { v4 as uuid } from 'uuid';
 import configuration from '../../Utils/config/configuration';
-import { UserRole } from '../../Utils/types/user/AuthUser.type';
 import { Admin, AdminDocument } from '../schema/admin.schema';
 
 @Injectable()
@@ -15,14 +14,15 @@ export class AdminTokenService {
     private adminModel: Model<AdminDocument>,
   ) {}
 
-  public createToken(
+  public createAdminToken(
     currentTokenId: string,
-    userRole: UserRole,
+    idAdmin: string,
+    login: string,
   ): {
     accessToken: string;
     expiresIn: number;
   } {
-    const payload: JwtPayload = { id: currentTokenId, role: userRole };
+    const payload: JwtAdminPayload = { id: currentTokenId, idAdmin, login };
     const expiresIn = 60 * 60 * 24;
     const accessToken = sign(payload, configuration().server.secretKey, {
       expiresIn,
@@ -33,7 +33,7 @@ export class AdminTokenService {
     };
   }
 
-  public async generateToken(user: Admin): Promise<string> {
+  public async generateAdminToken(admin: Admin): Promise<string> {
     let token;
     let userWithThisToken = null;
     do {
@@ -41,7 +41,7 @@ export class AdminTokenService {
       userWithThisToken = await this.adminModel.findOne({ accessToken: token });
     } while (!!userWithThisToken);
     await this.adminModel.findOneAndUpdate(
-      { idUser: user.idUser },
+      { idAdmin: admin.idAdmin, login: admin.login },
       { accessToken: token },
     );
     return token;

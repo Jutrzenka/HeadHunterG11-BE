@@ -6,9 +6,9 @@ export type AdminDocument = Admin & Document;
 @Schema()
 export class Admin extends Document {
   @Prop({ required: true, unique: true })
-  idUser: string;
+  idAdmin: string;
   @Prop({ required: true, unique: true })
-  email: string;
+  login: string;
   @Prop({ required: false, default: null })
   password: string | null;
   @Prop({ required: false, default: null })
