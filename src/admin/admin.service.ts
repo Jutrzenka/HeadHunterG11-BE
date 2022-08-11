@@ -33,6 +33,7 @@ export class AdminService {
       activeAccount: false,
       registerCode: uuid(),
     });
+    // @TODO wysyłanie e-maila rejestracyjnego
     return newUser.save();
   }
 
@@ -75,19 +76,73 @@ export class AdminService {
   }
 
   async deleteUser(idUser: string): Promise<JsonCommunicationType> {
-    const status = await this.userModel.deleteOne({ idUser }).exec();
-    if (status.deletedCount !== 1) {
-      return generateErrorResponse('D000');
-    } else {
-      return generateSuccessResponse();
+    try {
+      const status = await this.userModel.deleteOne({ idUser }).exec();
+      if (status.deletedCount !== 1) {
+        return generateErrorResponse('D000');
+      } else {
+        return generateSuccessResponse();
+      }
+    } catch (err) {
+      return generateErrorResponse('A000');
     }
   }
 
-  async editEmail(): Promise<JsonCommunicationType> {
-    return generateErrorResponse('B000');
+  async editEmail(
+    idUser: string,
+    newEmail: string,
+  ): Promise<JsonCommunicationType> {
+    try {
+      const user = await this.userModel
+        .findOneAndUpdate(
+          { idUser },
+          {
+            email: newEmail,
+            registerCode: uuid(),
+            password: null,
+            activeAccount: false,
+          },
+          { new: true },
+        )
+        .exec();
+      if (user === null) {
+        return generateErrorResponse('D000');
+      } else {
+        // TODO Wysyłać nowy e-mail rejestracyjny
+        return generateSuccessResponse();
+      }
+    } catch (err) {
+      if (err.code === 11000) {
+        return generateErrorResponse('C001');
+      }
+      return generateErrorResponse('A000');
+    }
   }
 
-  async newRegisterCode(): Promise<JsonCommunicationType> {
-    return generateErrorResponse('B000');
+  async newPassword(idUser: string): Promise<JsonCommunicationType> {
+    try {
+      const user = await this.userModel
+        .findOneAndUpdate(
+          { idUser },
+          {
+            registerCode: uuid(),
+            password: null,
+            activeAccount: false,
+          },
+          { new: true },
+        )
+        .exec();
+      if (user === null) {
+        return generateErrorResponse('D000');
+      } else {
+        // TODO Wysyłać nowy e-mail rejestracyjny
+        return generateSuccessResponse();
+      }
+    } catch (err) {
+      if (err.code === 11000) {
+        return generateErrorResponse('C001');
+      }
+      return generateErrorResponse('A000');
+    }
   }
 }
