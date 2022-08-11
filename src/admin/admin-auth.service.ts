@@ -39,7 +39,7 @@ export class AdminAuthService {
 
       return res
         .cookie('jwtAdmin', token.accessToken, {
-          secure: false, // @TODO w wersji produkcyjnej (https) ustawiamy true
+          secure: configuration().server.ssl,
           domain: configuration().server.domain,
           httpOnly: true,
         })
@@ -56,17 +56,13 @@ export class AdminAuthService {
         { accessToken: null },
       );
       res.clearCookie('jwtAdmin', {
-        secure: false,
+        secure: configuration().server.ssl,
         domain: configuration().server.domain,
         httpOnly: true,
       });
       return res.json(generateSuccessResponse());
     } catch (e) {
-      return {
-        success: false,
-        typeData: 'status',
-        data: { code: 404, message: e.message },
-      };
+      return generateErrorResponse('A000');
     }
   }
 }
