@@ -146,7 +146,7 @@ export class AuthService {
     }
   }
 
-  async logout(user: User, res: Response) {
+  async logout(user: User, res: Response): Promise<any> {
     try {
       await this.authModel.findOneAndUpdate(
         { idUser: user.idUser },
@@ -158,9 +158,18 @@ export class AuthService {
         httpOnly: true,
       });
       // return res.json({ ok: true });
-      return res.json(generateSuccessResponse());
+      return res.json({
+        success: true,
+        typeData: 'status',
+        data: null,
+      });
     } catch (e) {
-      return generateErrorResponse('A000');
+      // return res.json({ error: e.message });
+      return {
+        success: false,
+        typeData: 'status',
+        data: { code: 404, message: e.message },
+      };
     }
   }
 }
