@@ -3,10 +3,13 @@ import { AppModule } from './app.module';
 import configuration from './Utils/config/configuration';
 import * as cookieParser from 'cookie-parser';
 import { whitelistCors } from './Utils/config/corsConfig';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import helmet from 'helmet';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = (await NestFactory.create(AppModule)) as NestExpressApplication;
   app.use(cookieParser());
+  app.use(helmet());
   app.enableCors({
     origin: whitelistCors.address,
     methods: whitelistCors.methods,
