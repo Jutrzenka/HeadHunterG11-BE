@@ -116,7 +116,7 @@ export class AuthService {
 
         return res
           .cookie('jwt', token.accessToken, {
-            secure: false, // w wersji produkcyjnej (https) ustawiamy true
+            secure: configuration().server.ssl,
             domain: configuration().server.domain,
             httpOnly: true,
           })
@@ -131,18 +131,14 @@ export class AuthService {
 
         return res
           .cookie('jwt', token.accessToken, {
-            secure: false,
+            secure: configuration().server.ssl,
             domain: configuration().server.domain,
             httpOnly: true,
           })
-          .json({
-            success: true,
-            typeData: 'status',
-            data: null,
-          });
+          .json(generateSuccessResponse());
       }
     } catch (e) {
-      return generateErrorResponse('D000');
+      return res.json(generateErrorResponse('D000'));
     }
   }
 
@@ -153,7 +149,7 @@ export class AuthService {
         { accessToken: null },
       );
       res.clearCookie('jwt', {
-        secure: false,
+        secure: configuration().server.ssl,
         domain: configuration().server.domain,
         httpOnly: true,
       });

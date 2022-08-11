@@ -14,7 +14,6 @@ import { UserObj } from '../Utils/decorators/userobj.decorator';
 import { User } from './schema/user.schema';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { UserDataService } from 'src/userData/userData.service';
-import { generateErrorResponse } from '../Utils/function/generateJsonResponse/generateJsonResponse';
 import { JwtAllGuard } from './authorization-token/guard/jwtAll.guard';
 
 @Controller('/api/auth')
@@ -26,19 +25,14 @@ export class AuthController {
 
   // Przyjmowanie danych z formularza i odesłanie tokenu JWT
   @Post('/login')
-  async login(
-    @Body() req: AuthLoginDto,
-    @Res() res: Response,
-  ): Promise<JsonCommunicationType> {
-    this.authService.login(req, res);
-    // Tymczasowa zwrotka
-    return generateErrorResponse('B000');
+  async login(@Body() req: AuthLoginDto, @Res() res: Response): Promise<any> {
+    return this.authService.login(req, res);
   }
 
   // Wylogowywanie - resetowanie tokenów itd.
   @Post('/logout')
   @UseGuards(JwtAllGuard)
-  async logout(@UserObj() user: User, @Res() res: Response): Promise<any> {
+  async logout(@UserObj() user: User, @Res() res: Response): Promise<Response> {
     return this.authService.logout(user, res);
   }
 
