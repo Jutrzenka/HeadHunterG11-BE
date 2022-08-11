@@ -9,6 +9,7 @@ import {
 import { Response } from 'express';
 import { decryption } from '../Utils/function/bcrypt';
 import configuration from '../Utils/config/configuration';
+import { User } from '../auth/schema/user.schema';
 import { AdminTokenService } from './authorization-token/admin-token.service';
 import { AdminAuthLoginDto } from './dto/admin-auth-login.dto';
 
