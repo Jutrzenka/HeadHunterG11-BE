@@ -135,14 +135,10 @@ export class AuthService {
             domain: configuration().server.domain,
             httpOnly: true,
           })
-          .json({
-            success: true,
-            typeData: 'status',
-            data: null,
-          });
+          .json(generateSuccessResponse());
       }
     } catch (e) {
-      return generateErrorResponse('D000');
+      return res.json(generateErrorResponse('D000'));
     }
   }
 

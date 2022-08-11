@@ -9,7 +9,6 @@ import {
 import { Response } from 'express';
 import { decryption } from '../Utils/function/bcrypt';
 import configuration from '../Utils/config/configuration';
-import { User } from '../auth/schema/user.schema';
 import { AdminTokenService } from './authorization-token/admin-token.service';
 import { AdminAuthLoginDto } from './dto/admin-auth-login.dto';
 
@@ -40,7 +39,7 @@ export class AdminAuthService {
 
       return res
         .cookie('jwtAdmin', token.accessToken, {
-          secure: false, // w wersji produkcyjnej (https) ustawiamy true
+          secure: false, // @TODO w wersji produkcyjnej (https) ustawiamy true
           domain: configuration().server.domain,
           httpOnly: true,
         })
