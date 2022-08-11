@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Patch,
   Post,
   Put,
@@ -35,23 +36,26 @@ export class AdminController {
   async login(
     @Body() req: AdminAuthLoginDto,
     @Res() res: Response,
-  ): Promise<any> {
+  ): Promise<Response> {
     return this.adminAuthService.adminLogin(req, res);
   }
 
   // Wylogowywanie - resetowanie tokenów itd.
   @Post('/auth/logout')
   @UseGuards(JwtAdminGuard)
-  async logout(@UserObj() admin: Admin, @Res() res: Response): Promise<any> {
+  async logout(
+    @UserObj() admin: Admin,
+    @Res() res: Response,
+  ): Promise<Response> {
     return this.adminAuthService.adminLogout(admin, res);
   }
 
   @Get('/students')
   @UseGuards(JwtAdminGuard)
   async allStudents(
-    @Body() body: { filter: string; limit: number; page: number },
+    @Body()
+    { filter, limit, page }: { filter: string; limit: number; page: number },
   ): Promise<JsonCommunicationType> {
-    const { filter, limit, page } = body;
     if (limit > 50 || limit < 1 || page < 1) {
       return generateErrorResponse('C002');
     }
@@ -65,9 +69,9 @@ export class AdminController {
   @Get('/headhunters')
   @UseGuards(JwtAdminGuard)
   async allHeadhunters(
-    @Body() body: { filter: string; limit: number; page: number },
+    @Body()
+    { filter, limit, page }: { filter: string; limit: number; page: number },
   ): Promise<JsonCommunicationType> {
-    const { filter, limit, page } = body;
     if (limit > 50 || limit < 1 || page < 1) {
       return generateErrorResponse('C002');
     }
@@ -78,10 +82,15 @@ export class AdminController {
     });
   }
 
-  @Delete('/user/:id')
+  @Delete('/user/:idUser')
   @UseGuards(JwtAdminGuard)
-  async deleteUser(): Promise<JsonCommunicationType> {
-    return this.adminService.deleteUser();
+  async deleteUser(
+    @Param() { idUser }: { idUser: string },
+  ): Promise<JsonCommunicationType> {
+    if (!idUser || idUser.length !== 36) {
+      return generateErrorResponse('C004');
+    }
+    return this.adminService.deleteUser(idUser);
   }
 
   // Pamiętać o zresetowaniu registerCode i wysłaniu ponownie e-maila
