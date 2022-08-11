@@ -6,7 +6,10 @@ import { v4 as uuid } from 'uuid';
 import { UserRole } from '../Utils/types/user/AuthUser.type';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { searchUsersInMongo } from '../Utils/function/searchUsersInMongo';
-import { generateErrorResponse } from '../Utils/function/generateJsonResponse/generateJsonResponse';
+import {
+  generateErrorResponse,
+  generateSuccessResponse,
+} from '../Utils/function/generateJsonResponse/generateJsonResponse';
 
 @Injectable()
 export class AdminService {
@@ -71,8 +74,13 @@ export class AdminService {
     }
   }
 
-  async deleteUser(): Promise<JsonCommunicationType> {
-    return generateErrorResponse('B000');
+  async deleteUser(idUser: string): Promise<JsonCommunicationType> {
+    const status = await this.userModel.deleteOne({ idUser }).exec();
+    if (status.deletedCount !== 1) {
+      return generateErrorResponse('D000');
+    } else {
+      return generateSuccessResponse();
+    }
   }
 
   async editEmail(): Promise<JsonCommunicationType> {

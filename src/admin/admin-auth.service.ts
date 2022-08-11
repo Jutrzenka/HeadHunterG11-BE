@@ -21,14 +21,14 @@ export class AdminAuthService {
     private adminTokenService: AdminTokenService,
   ) {}
 
-  async adminLogin(req: AdminAuthLoginDto, res: Response) {
+  async adminLogin(req: AdminAuthLoginDto, res: Response): Promise<Response> {
     try {
       const admin = await this.adminModel.findOne({
         login: req.login,
       });
       const isAdmin = await decryption(req.pwd, admin.password);
       if (!isAdmin) {
-        return generateErrorResponse('D000');
+        return res.json(generateErrorResponse('D000'));
       }
 
       const token = this.adminTokenService.createAdminToken(
@@ -45,11 +45,11 @@ export class AdminAuthService {
         })
         .json(generateSuccessResponse());
     } catch (e) {
-      return generateErrorResponse('D000');
+      return res.json(generateErrorResponse('D000'));
     }
   }
 
-  async adminLogout(admin: Admin, res: Response): Promise<any> {
+  async adminLogout(admin: Admin, res: Response): Promise<Response> {
     try {
       await this.adminModel.findOneAndUpdate(
         { idAdmin: admin.idAdmin },
@@ -62,7 +62,7 @@ export class AdminAuthService {
       });
       return res.json(generateSuccessResponse());
     } catch (e) {
-      return generateErrorResponse('A000');
+      return res.json(generateErrorResponse('A000'));
     }
   }
 }
