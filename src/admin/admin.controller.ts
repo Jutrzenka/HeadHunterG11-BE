@@ -94,25 +94,38 @@ export class AdminController {
   }
 
   // Pamiętać o zresetowaniu registerCode i wysłaniu ponownie e-maila
-  @Patch('/user/:id')
+  @Patch('/user/:idUser')
   @UseGuards(JwtAdminGuard)
-  async editEmailUser(): Promise<JsonCommunicationType> {
-    return this.adminService.editEmail();
+  async editEmailUser(
+    @Param() { idUser }: { idUser: string },
+    @Body() { email }: { email: string },
+  ): Promise<JsonCommunicationType> {
+    if (!validateEmail(email)) {
+      return generateErrorResponse('C002');
+    }
+    if (!idUser || idUser.length !== 36) {
+      return generateErrorResponse('C004');
+    }
+    return this.adminService.editEmail(idUser, email);
   }
 
-  @Post('/user/:id')
+  @Post('/user/:idUser')
   @UseGuards(JwtAdminGuard)
-  async newRegisterCode(): Promise<JsonCommunicationType> {
-    return this.adminService.newRegisterCode();
+  async newPassword(
+    @Param() { idUser }: { idUser: string },
+  ): Promise<JsonCommunicationType> {
+    if (!idUser || idUser.length !== 36) {
+      return generateErrorResponse('C004');
+    }
+    return this.adminService.newPassword(idUser);
   }
 
   // Tworzenie użytkownika
   @Put('/create')
   @UseGuards(JwtAdminGuard)
   async createOneUser(
-    @Body() body: { email: string; role: UserRole },
+    @Body() { email, role }: { email: string; role: UserRole },
   ): Promise<JsonCommunicationType> {
-    const { email, role } = body;
     if (
       !role ||
       (role !== UserRole.Student && role !== UserRole.HeadHunter) ||
