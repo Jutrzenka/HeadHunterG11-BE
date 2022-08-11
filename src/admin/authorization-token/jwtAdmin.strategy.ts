@@ -29,10 +29,9 @@ export class JwtAdminStrategy extends PassportStrategy(Strategy, 'jwtAdmin') {
   }
 
   async validate(payload: JwtAdminPayload, done: (error, user) => void) {
-    console.log(payload);
-    // if (!payload || !payload.id || !payload.idAdmin || !payload.login) {
-    //   return done(new UnauthorizedException(), false);
-    // }
+    if (!payload || !payload.id || !payload.idAdmin || !payload.login) {
+      return done(new UnauthorizedException(), false);
+    }
 
     const admin = await this.adminModel.findOne({
       accessToken: payload.id,
