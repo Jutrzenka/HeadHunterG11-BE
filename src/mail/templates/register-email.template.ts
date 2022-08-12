@@ -8,13 +8,11 @@ export const registerEmailTemplate = (login: string, registerCode: string) => {
   <p>Twój link aktywacyjny do platformy HeadHunter MegaK:</p>
   <a href="${
     ssl ? 'https://' : 'http://'
-  }register.${domain}:${port}/api/auth/register/${login}/${registerCode}">
+  }register.${domain}:${port}/students/${login}/${registerCode}">
   KLIKNIJ TUTAJ
-</a>
+  </a>
   <p>Lub wejdź na ten adres: ${
     ssl ? 'https://' : 'http://'
-  }register.${domain}:${port}/api/auth/register/${striptags(
-    login,
-  )}/${registerCode}</p>
+  }register.${domain}:${port}/students/${striptags(login)}/${registerCode}</p>
     `;
 };
