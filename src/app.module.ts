@@ -30,18 +30,18 @@ import { MailModule } from './mail/mail.module';
       entities: ['dist/**/**.entity{.ts,.js}'],
       bigNumberStrings: false,
       logging: false,
-      synchronize: true,
+      synchronize: false,
     }),
     // Nasze moduły
     UserDataModule,
     InterviewModule,
     AuthModule,
     AdminModule,
+    MailModule,
     // Serwowanie plików statycznych
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', '/public/build'),
     }),
-    MailModule,
   ],
 })
 export class AppModule {}
