@@ -7,6 +7,7 @@ export default () => ({
     secretKey: process.env.SECRET_OR_KEY,
   },
   mailer: {
+    service: process.env.SERVICE_MAILER ?? null,
     host: process.env.HOST_MAILER,
     port: parseInt(process.env.PORT_MAILER),
     secure: process.env.SECURE_MAILER === 'true',

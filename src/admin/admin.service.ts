@@ -13,6 +13,7 @@ import {
 import { MailService } from '../mail/mail.service';
 import { createTransport } from 'nodemailer';
 import configuration from '../Utils/config/configuration';
+import { registerEmailTemplate } from '../mail/templates/register-email.template';
 
 @Injectable()
 export class AdminService {
@@ -38,7 +39,11 @@ export class AdminService {
       activeAccount: false,
       registerCode: uuid(),
     });
-    await this.mailService.sendMail(email, 'Test', 'Dodano do koszyka!');
+    await this.mailService.sendMail(
+      email.toLowerCase().trim(),
+      'Link aktywacyjny do platformy HeadHunter MegaK',
+      registerEmailTemplate(newUser.login, newUser.registerCode),
+    );
     return newUser.save();
   }
 

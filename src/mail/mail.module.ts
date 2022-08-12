@@ -13,7 +13,10 @@ import { ConfigModule } from '@nestjs/config';
     }),
     MailerModule.forRoot({
       transport: {
-        service: undefined,
+        pool: true,
+        maxConnections: 3,
+        maxMessages: 165,
+        service: configuration().mailer.service,
         host: configuration().mailer.host,
         port: configuration().mailer.port,
         secure: configuration().mailer.secure,
