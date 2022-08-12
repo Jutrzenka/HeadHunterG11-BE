@@ -1,4 +1,5 @@
 import configuration from '../../Utils/config/configuration';
+import striptags from 'striptags';
 
 export const registerEmailTemplate = (login: string, registerCode: string) => {
   const { ssl, domain, port } = configuration().server;
@@ -12,6 +13,8 @@ export const registerEmailTemplate = (login: string, registerCode: string) => {
 </a>
   <p>Lub wejdź na ten adres: ${
     ssl ? 'https://' : 'http://'
-  }register.${domain}:${port}/api/auth/register/${login}/${registerCode}</p>
+  }register.${domain}:${port}/api/auth/register/${striptags(
+    login,
+  )}/${registerCode}</p>
     `;
 };
