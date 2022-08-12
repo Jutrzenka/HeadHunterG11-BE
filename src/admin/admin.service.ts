@@ -13,6 +13,7 @@ import {
 import { MailService } from '../mail/mail.service';
 import {
   editEmailTemplate,
+  newPasswordEmailTemplate,
   registerEmailTemplate,
 } from 'src/mail/templates/export';
 
@@ -150,7 +151,11 @@ export class AdminService {
       if (user === null) {
         return generateErrorResponse('D000');
       } else {
-        // TODO Wysyłać nowy e-mail rejestracyjny
+        await this.mailService.sendMail(
+          user.email.toLowerCase().trim(),
+          'Resetowanie konta na platformie HeadHunter MegaK',
+          newPasswordEmailTemplate(user.login, user.registerCode),
+        );
         return generateSuccessResponse();
       }
     } catch (err) {
