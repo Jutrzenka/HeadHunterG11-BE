@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AdminModule } from './admin/admin.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { AdminModule } from './admin/admin.module';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', '/public/build'),
     }),
+    MailModule,
   ],
 })
 export class AppModule {}

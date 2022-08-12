@@ -140,6 +140,7 @@ export class AdminController {
       if (err.code === 11000) {
         return generateErrorResponse('C001');
       }
+      console.log(err);
       return generateErrorResponse('A000');
     }
   }
