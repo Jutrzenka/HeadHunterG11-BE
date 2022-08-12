@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from 'src/auth/schema/user.schema';
 import { v4 as uuid } from 'uuid';
@@ -10,12 +10,17 @@ import {
   generateErrorResponse,
   generateSuccessResponse,
 } from '../Utils/function/generateJsonResponse/generateJsonResponse';
+import { MailService } from '../mail/mail.service';
+import { createTransport } from 'nodemailer';
+import configuration from '../Utils/config/configuration';
 
 @Injectable()
 export class AdminService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
+    @Inject(MailService)
+    private mailService: MailService,
   ) {}
 
   async createUser({
@@ -33,7 +38,7 @@ export class AdminService {
       activeAccount: false,
       registerCode: uuid(),
     });
-    // @TODO wysyłanie e-maila rejestracyjnego
+    await this.mailService.sendMail(email, 'Test', 'Dodano do koszyka!');
     return newUser.save();
   }
 
