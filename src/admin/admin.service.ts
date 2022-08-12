@@ -11,9 +11,10 @@ import {
   generateSuccessResponse,
 } from '../Utils/function/generateJsonResponse/generateJsonResponse';
 import { MailService } from '../mail/mail.service';
-import { createTransport } from 'nodemailer';
-import configuration from '../Utils/config/configuration';
-import { registerEmailTemplate } from '../mail/templates/register-email.template';
+import {
+  editEmailTemplate,
+  registerEmailTemplate,
+} from 'src/mail/templates/export';
 
 @Injectable()
 export class AdminService {
@@ -118,7 +119,11 @@ export class AdminService {
       if (user === null) {
         return generateErrorResponse('D000');
       } else {
-        // TODO Wysyłać nowy e-mail rejestracyjny
+        await this.mailService.sendMail(
+          user.email.toLowerCase().trim(),
+          'Ponowny link do platformy HeadHunter MegaK',
+          editEmailTemplate(user.login, user.registerCode),
+        );
         return generateSuccessResponse();
       }
     } catch (err) {
