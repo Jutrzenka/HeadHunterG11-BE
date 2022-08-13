@@ -3,13 +3,13 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Admin, AdminDocument } from './schema/admin.schema';
 import {
+  generateElementResponse,
   generateErrorResponse,
   generateSuccessResponse,
 } from '../Utils/function/generateJsonResponse/generateJsonResponse';
 import { Response } from 'express';
 import { decryption } from '../Utils/function/bcrypt';
 import configuration from '../Utils/config/configuration';
-import { User } from '../auth/schema/user.schema';
 import { AdminTokenService } from './authorization-token/admin-token.service';
 import { AdminAuthLoginDto } from './dto/admin-auth-login.dto';
 
@@ -44,7 +44,13 @@ export class AdminAuthService {
           domain: configuration().server.domain,
           httpOnly: true,
         })
-        .json(generateSuccessResponse());
+        .json(
+          generateElementResponse('object', {
+            id: admin.idAdmin,
+            login: admin.login,
+            role: 'ADMIN',
+          }),
+        );
     } catch (e) {
       return res.json(generateErrorResponse('D000'));
     }
