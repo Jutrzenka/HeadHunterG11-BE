@@ -7,6 +7,7 @@ import { UserRole } from '../Utils/types/user/AuthUser.type';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { searchUsersInMongo } from '../Utils/function/searchUsersInMongo';
 import {
+  generateElementResponse,
   generateErrorResponse,
   generateSuccessResponse,
 } from '../Utils/function/generateJsonResponse/generateJsonResponse';
@@ -16,6 +17,9 @@ import {
   newPasswordEmailTemplate,
   registerEmailTemplate,
 } from 'src/mail/templates/export';
+import { unlink, readFile } from 'fs/promises';
+import { ReceivedFiles } from '../Utils/types/data/MulterDiskUploadedFiles';
+import { validateEmail } from '../Utils/function/validateEmail';
 
 @Injectable()
 export class AdminService {
@@ -47,6 +51,95 @@ export class AdminService {
       registerEmailTemplate(newUser.login, newUser.registerCode),
     );
     return newUser.save();
+  }
+
+  async createUserJson(files: ReceivedFiles) {
+    try {
+      const errorsDatabase = [];
+      const errorsMailer = [];
+      const allUsers = [];
+      const filePath = files['user-json'][0].path;
+      const data = JSON.parse(await readFile(filePath, 'utf8'));
+      for (const user of data) {
+        try {
+          if (
+            !user.role ||
+            (user.role !== UserRole.Student &&
+              user.role !== UserRole.HeadHunter) ||
+            !validateEmail(user.email)
+          ) {
+            throw {
+              code: 'C001',
+              message: `Błedna rola, lub login: ${user.email} - Rola: ${user.role}`,
+            };
+          }
+          const newUser = await this.userModel
+            .findOneAndUpdate(
+              {
+                role: user.role,
+                email: user.email.toLowerCase().trim(),
+              },
+              {
+                idUser: uuid(),
+                role: user.role,
+                email: user.email.toLowerCase().trim(),
+                login: user.email
+                  .toLowerCase()
+                  .split('@')[0]
+                  .concat('-', uuid()),
+                activeAccount: false,
+                registerCode: uuid(),
+              },
+              {
+                lean: true,
+                upsert: true,
+                new: true,
+              },
+            )
+            .exec();
+          allUsers.push(newUser);
+        } catch (err) {
+          errorsDatabase.push({
+            user: err.keyValue,
+            code: err.code,
+            message: err.message,
+          });
+        }
+      }
+      for (const mailerUser of allUsers) {
+        try {
+          await this.mailService.sendMail(
+            mailerUser.email.toLowerCase().trim(),
+            'Link aktywacyjny do platformy HeadHunter MegaK',
+            registerEmailTemplate(mailerUser.login, mailerUser.registerCode),
+          );
+        } catch (err) {
+          errorsMailer.push({
+            user: err,
+            code: err.code,
+            message: err.message,
+          });
+        }
+      }
+      try {
+        if (files['user-json']) await unlink(files['user-json'][0].path);
+      } catch (err) {
+        return generateErrorResponse('E003');
+      }
+      return generateElementResponse('object', {
+        numberOfSuccesses: allUsers.length,
+        numberOfErrors: errorsDatabase.length + errorsMailer.length,
+        errorsDatabase,
+        errorsMailer,
+      });
+    } catch (err) {
+      try {
+        await unlink(files['user-json'][0].path);
+      } catch (err2) {
+        return generateErrorResponse('E002');
+      }
+      return generateErrorResponse('E001');
+    }
   }
 
   async getAllStudents({
