@@ -2,12 +2,14 @@ export type CodeError =
   | CriticalError
   | TemporaryError
   | ValidationError
-  | AuthenticationError;
+  | AuthenticationError
+  | FilesError;
 
 type CriticalError = 'A000';
 type TemporaryError = 'B000';
 type ValidationError = 'C000' | 'C001' | 'C002' | 'C003' | 'C004';
 type AuthenticationError = 'D000';
+type FilesError = 'E000' | 'E001' | 'E002' | 'E003';
 
 export const _allCodeError = [
   // A -> Krytyczne
@@ -25,4 +27,17 @@ export const _allCodeError = [
 
   // D -> Błędy przy autentykacji i autoryzacji
   { code: 'D000', message: 'Nie znaleziono takiego użytkownika' },
+
+  // E -> Błędy przy obsłudze plików
+  { code: 'E000', message: 'Nie wysłano pliku, lub był w złym formacie' },
+  {
+    code: 'E001',
+    message: 'Nieznany błąd, ale udało się usunąć otrzymany plik',
+  },
+  {
+    code: 'E002',
+    message:
+      'Nieznany błąd i nie udało się usunąć pliku, albo określonego pliku już brak',
+  },
+  { code: 'E003', message: 'Nie udało się usunąć pliku na końcu zapytania' },
 ];

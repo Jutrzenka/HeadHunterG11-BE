@@ -11,6 +11,7 @@ import { decryption, encryption } from '../Utils/function/bcrypt';
 import { UserDataService } from '../userData/userData.service';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import {
+  generateElementResponse,
   generateErrorResponse,
   generateSuccessResponse,
 } from '../Utils/function/generateJsonResponse/generateJsonResponse';
@@ -120,7 +121,13 @@ export class AuthService {
             domain: configuration().server.domain,
             httpOnly: true,
           })
-          .json(generateSuccessResponse());
+          .json(
+            generateElementResponse('object', {
+              id: user.idUser,
+              login: user.login,
+              role: 'STUDENT',
+            }),
+          );
       }
 
       if (user.role === UserRole.HeadHunter) {
@@ -135,7 +142,13 @@ export class AuthService {
             domain: configuration().server.domain,
             httpOnly: true,
           })
-          .json(generateSuccessResponse());
+          .json(
+            generateElementResponse('object', {
+              id: user.idUser,
+              login: user.login,
+              role: 'HEADHUNTER',
+            }),
+          );
       }
     } catch (e) {
       return res.json(generateErrorResponse('D000'));
@@ -154,11 +167,7 @@ export class AuthService {
         httpOnly: true,
       });
       // return res.json({ ok: true });
-      return res.json({
-        success: true,
-        typeData: 'status',
-        data: null,
-      });
+      return res.json(generateSuccessResponse());
     } catch (e) {
       // return res.json({ error: e.message });
       return {

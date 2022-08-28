@@ -8,11 +8,17 @@ import {
   Post,
   Put,
   Res,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AdminService } from './admin.service';
-import { UserRole } from 'src/Utils/types/export';
+import {
+  JsonCommunicationType,
+  ReceivedFiles,
+  UserRole,
+} from 'src/Utils/types/export';
 import { AdminAuthService } from './admin-auth.service';
 import { validateEmail } from '../Utils/function/validateEmail';
 import {
@@ -24,6 +30,7 @@ import { AdminAuthLoginDto } from './dto/admin-auth-login.dto';
 import { UserObj } from '../Utils/decorators/userobj.decorator';
 import { Admin } from './schema/admin.schema';
 import { JwtAdminGuard } from './authorization-token/guard/jwtAdmin.guard';
+import { storageDir } from 'src/Utils/function/storageDir';
 
 @Controller('/api/admin')
 export class AdminController {
@@ -155,9 +162,19 @@ export class AdminController {
 
   @Put('/create/json')
   @UseGuards(JwtAdminGuard)
-  async createJsonUser(): Promise<JsonCommunicationType> {
-    // TODO zapętlić: await this.adminService.createUser({ email, role });
-    // Tymczasowa zwrotka
-    return generateErrorResponse('B000');
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: 'user-json', maxCount: 1 }], {
+      dest: storageDir('JsonUser'),
+    }),
+  )
+  async createJsonUser(
+    @UploadedFiles() files: ReceivedFiles,
+  ): Promise<JsonCommunicationType> {
+    if (
+      !files['user-json'] ||
+      files['user-json'][0].mimetype !== 'application/json'
+    )
+      return generateErrorResponse('E000');
+    return await this.adminService.createUserJson(files);
   }
 }
