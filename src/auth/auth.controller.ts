@@ -23,13 +23,11 @@ export class AuthController {
     private readonly userDataService: UserDataService,
   ) {}
 
-  // Przyjmowanie danych z formularza i odesłanie tokenu JWT
   @Post('/login')
   async login(@Body() req: AuthLoginDto, @Res() res: Response): Promise<any> {
     return this.authService.login(req, res);
   }
 
-  // Wylogowywanie - resetowanie tokenów itd.
   @Post('/logout')
   @UseGuards(JwtAllGuard)
   async logout(@UserObj() user: User, @Res() res: Response): Promise<Response> {
