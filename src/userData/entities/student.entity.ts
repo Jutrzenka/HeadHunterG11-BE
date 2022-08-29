@@ -4,34 +4,25 @@ import {
   BaseEntity,
   Column,
   Entity,
-  JoinColumn,
-  OneToOne,
+  OneToMany,
   PrimaryColumn,
-  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Status, TypeWork, ContractType } from '../../Utils/types/export';
 
 @Entity()
 export class Student extends BaseEntity {
-  // @PrimaryColumn({
-  //   length: 36,
-  //   primary: true,
-  //   nullable: false,
-  //   unique: true,
-  //   default: uuid(),
-  // })
-  // id: string;
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn({
+    length: 36,
+    primary: true,
+    nullable: false,
+    unique: true,
+    default: uuid(),
+  })
   id: string;
 
-  // @Column({
-  //   length: 36,
-  //   nullable: false,
-  // })
-  // idUser: string;
-
   @Column({
-    nullable: true,
+    enum: Status,
+    default: Status.Inactive,
   })
   status: Status;
 
@@ -49,6 +40,18 @@ export class Student extends BaseEntity {
 
   @Column()
   bonusProjectUrls: string;
+
+  @Column({
+    length: 50,
+    nullable: false,
+  })
+  firstName: string;
+
+  @Column({
+    length: 100,
+    nullable: false,
+  })
+  lastName: string;
 
   @Column({
     nullable: true,
@@ -74,6 +77,7 @@ export class Student extends BaseEntity {
   bio: string;
 
   @Column({
+    enum: TypeWork,
     default: TypeWork.None,
   })
   expectedTypeWork: TypeWork;
@@ -84,6 +88,7 @@ export class Student extends BaseEntity {
   targetWorkCity: string;
 
   @Column({
+    enum: ContractType,
     default: ContractType.None,
   })
   expectedContractType: ContractType;
@@ -122,8 +127,6 @@ export class Student extends BaseEntity {
   })
   courses: string;
 
-  @OneToOne((type) => Interview)
-  // dla automatycznego pobierania zawsze relacji dodac w opcjach eager:true
-  @JoinColumn()
-  interview: Interview;
+  @OneToMany((type) => Interview, (entity) => entity.student)
+  interviews: Interview[];
 }
