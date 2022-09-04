@@ -1,3 +1,4 @@
+import { type } from 'os';
 import { Interview } from 'src/interview/entities/interview.entity';
 import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { Status, TypeWork, ContractType } from '../../Utils/types/export';
@@ -13,6 +14,8 @@ export class Student extends BaseEntity {
   id: string;
 
   @Column({
+    type: 'enum',
+    enum: Status,
     default: Status.Inactive,
   })
   status: Status;
@@ -29,8 +32,10 @@ export class Student extends BaseEntity {
   @Column()
   teamProjectDegree: number;
 
-  @Column()
-  bonusProjectUrls: string;
+  @Column({
+    type: 'simple-array',
+  })
+  bonusProjectUrls: string[];
 
   @Column({
     length: 50,
@@ -47,8 +52,6 @@ export class Student extends BaseEntity {
   @Column({
     nullable: true,
     default: null,
-    type: 'float',
-    precision: 9,
   })
   tel: number;
 
@@ -58,18 +61,25 @@ export class Student extends BaseEntity {
   githubUsername: string;
 
   @Column({
+    type: 'simple-array',
     nullable: true,
     default: null,
   })
-  portfolioUrls: string;
+  portfolioUrls: string[];
 
-  @Column()
-  projectUrls: string;
+  @Column({
+    type: 'simple-array',
+  })
+  projectUrls: string[];
 
-  @Column()
+  @Column({
+    length: 1000,
+  })
   bio: string;
 
   @Column({
+    type: 'enum',
+    enum: TypeWork,
     default: TypeWork.None,
   })
   expectedTypeWork: TypeWork;
@@ -80,6 +90,8 @@ export class Student extends BaseEntity {
   targetWorkCity: string;
 
   @Column({
+    type: 'enum',
+    enum: ContractType,
     default: ContractType.None,
   })
   expectedContractType: ContractType;

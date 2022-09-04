@@ -14,6 +14,7 @@ import { UserObj } from '../Utils/decorators/userobj.decorator';
 import { User } from './schema/user.schema';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { JwtAllGuard } from './authorization-token/guard/jwtAll.guard';
+import { RegisterUserDto } from './dto/register-user.dto';
 
 @Controller('/api/auth')
 export class AuthController {
@@ -34,12 +35,7 @@ export class AuthController {
   async firstLogin(
     @Param() param: { login: string; registerCode: string },
     @Body()
-    body: {
-      newLogin: string;
-      password: string;
-      firstName?: string;
-      lastName?: string;
-    },
+    body: RegisterUserDto,
   ): Promise<JsonCommunicationType> {
     return await this.authService.activateFullAccount(param, body);
   }

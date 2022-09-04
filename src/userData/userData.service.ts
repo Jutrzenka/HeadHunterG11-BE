@@ -20,6 +20,7 @@ import {
 import { employStudentByHrEmailTemplate } from '../mail/templates/employStudentByHr-email.template';
 import { employEmailTemplate } from '../mail/templates/employ-email.template';
 import { UpdateStudentDto } from './dto/update-student.dto';
+import { validateEmail } from '../Utils/function/validateEmail';
 
 @Injectable()
 export class UserDataService {
@@ -33,21 +34,11 @@ export class UserDataService {
     private mailService: MailService,
   ) {}
 
-  async activateMariaAccount({
-    idUser,
-    firstName,
-    lastName,
-  }: {
-    idUser: string;
-    firstName: string;
-    lastName: string;
-  }): Promise<any> {
+  async activateMariaAccount({ idUser }: { idUser: string }): Promise<any> {
     await Student.update(
       { id: idUser },
       {
         status: Status.Active,
-        firstName: striptags(firstName),
-        lastName: striptags(lastName),
       },
     );
   }
@@ -226,25 +217,30 @@ export class UserDataService {
       { id: user.idUser },
       {
         status: body.status,
-        firstName: body.firstName,
-        lastName: body.lastName,
-        bonusProjectUrls: body.bonusProjectUrls,
+        firstName: striptags(body.firstName),
+        lastName: striptags(body.lastName),
         tel: body.tel,
-        githubUsername: body.githubUsername,
+        githubUsername: striptags(body.githubUsername),
         portfolioUrls: body.portfolioUrls,
         projectUrls: body.projectUrls,
-        bio: body.bio,
+        bio: striptags(body.bio),
         expectedTypeWork: body.expectedTypeWork,
-        targetWorkCity: body.targetWorkCity,
+        targetWorkCity: striptags(body.targetWorkCity),
         expectedContractType: body.expectedContractType,
         expectedSalary: body.expectedSalary,
         canTakeApprenticeship: body.canTakeApprenticeship,
         monthsOfCommercialExp: body.monthsOfCommercialExp,
-        education: body.education,
-        workExperience: body.workExperience,
-        courses: body.courses,
+        education: striptags(body.education),
+        workExperience: striptags(body.workExperience),
+        courses: striptags(body.courses),
       },
     );
+    if (validateEmail(body.email)) {
+      await this.userModel.findOneAndUpdate(
+        { idUser: user.idUser },
+        { email: body.email },
+      );
+    }
     if (body.status === Status.Employed) {
       await this.userModel.findOneAndUpdate(
         {
@@ -261,6 +257,6 @@ export class UserDataService {
 
       await this.authService.logout(user, res);
     }
-    return generateSuccessResponse();
+    return res.json(generateSuccessResponse());
   }
 }

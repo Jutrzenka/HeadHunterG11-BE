@@ -16,6 +16,7 @@ import {
   generateSuccessResponse,
 } from '../Utils/function/generateJsonResponse/generateJsonResponse';
 import * as striptags from 'striptags';
+import { RegisterUserDto } from './dto/register-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -58,9 +59,12 @@ export class AuthService {
     });
   }
 
-  async activateFullAccount(param, body): Promise<JsonCommunicationType> {
+  async activateFullAccount(
+    param,
+    body: RegisterUserDto,
+  ): Promise<JsonCommunicationType> {
     const { login, registerCode } = param;
-    const { newLogin, password, firstName, lastName } = body;
+    const { newLogin, password } = body;
     try {
       const mongoDbData = await this.activateMongoAccount({
         login,
@@ -74,8 +78,6 @@ export class AuthService {
       if (mongoDbData.role === UserRole.Student) {
         await this.userDataService.activateMariaAccount({
           idUser: mongoDbData.idUser,
-          firstName,
-          lastName,
         });
       }
 
@@ -108,6 +110,7 @@ export class AuthService {
         );
 
         return res
+          .status(200)
           .cookie('jwt', token.accessToken, {
             secure: configuration().server.ssl,
             domain: configuration().server.domain,
@@ -121,9 +124,8 @@ export class AuthService {
             }),
           );
       }
-      return res.status(404).json(generateErrorResponse('D000'));
     } catch (e) {
-      return generateErrorResponse('D000');
+      return res.status(404).json(generateErrorResponse('D000'));
     }
   }
 
@@ -139,9 +141,9 @@ export class AuthService {
         httpOnly: true,
       });
 
-      return res.json(generateSuccessResponse());
+      return res.status(200).json(generateSuccessResponse());
     } catch (e) {
-      return generateErrorResponse('A000');
+      return res.status(500).json(generateErrorResponse('A000'));
     }
   }
 }

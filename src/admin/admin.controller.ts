@@ -100,7 +100,6 @@ export class AdminController {
     return this.adminService.deleteUser(idUser);
   }
 
-  // Pamiętać o zresetowaniu registerCode i wysłaniu ponownie e-maila
   @Patch('/user/:idUser')
   @UseGuards(JwtAdminGuard)
   async editEmailUser(
@@ -127,7 +126,6 @@ export class AdminController {
     return this.adminService.newPassword(idUser);
   }
 
-  // Tworzenie użytkownika
   @Put('/create')
   @UseGuards(JwtAdminGuard)
   async createOneUser(
