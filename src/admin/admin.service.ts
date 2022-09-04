@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from 'src/auth/schema/user.schema';
 import { v4 as uuid } from 'uuid';
@@ -20,13 +20,18 @@ import {
 import { unlink, readFile } from 'fs/promises';
 import { ReceivedFiles } from '../Utils/types/data/MulterDiskUploadedFiles';
 import { validateEmail } from '../Utils/function/validateEmail';
+import { Student } from '../userData/entities/student.entity';
+import { Hr } from '../userData/entities/hr.entity';
+import { CreateStudentDto } from './dto/create-student.dto';
+import { CreateHrDto } from './dto/create-hr.dto';
+import * as striptags from 'striptags';
 
 @Injectable()
 export class AdminService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
-    @Inject(MailService)
+    @Inject(forwardRef(() => MailService))
     private mailService: MailService,
   ) {}
 
@@ -36,7 +41,7 @@ export class AdminService {
   }: {
     email: string;
     role: UserRole;
-  }): Promise<User> {
+  }): Promise<[User, Student | Hr]> {
     const newUser = await this.userModel.create({
       idUser: uuid(),
       role,
@@ -45,59 +50,99 @@ export class AdminService {
       activeAccount: false,
       registerCode: uuid(),
     });
+    await newUser.save();
+
+    let user;
+    if (newUser.role === UserRole.Student) {
+      const student = new Student();
+      student.id = newUser.idUser;
+      await student.save();
+      user = student;
+    }
+
+    if (newUser.role === UserRole.HeadHunter) {
+      const hr = new Hr();
+      hr.id = newUser.idUser;
+      await hr.save();
+      user = hr;
+    }
     await this.mailService.sendMail(
       email.toLowerCase().trim(),
       'Link aktywacyjny do platformy HeadHunter MegaK',
       registerEmailTemplate(newUser.login, newUser.registerCode),
     );
-    return newUser.save();
+    return [newUser, user];
   }
 
-  async createUserJson(files: ReceivedFiles) {
+  async createHr(body: CreateHrDto): Promise<[User, Hr]> {
+    const newHrMongo = await this.userModel.create({
+      idUser: uuid(),
+      role: UserRole.HeadHunter,
+      email: body.email.toLowerCase().trim(),
+      login: body.email.toLowerCase().split('@')[0].concat('-', uuid()),
+      activeAccount: false,
+      registerCode: uuid(),
+    });
+    await newHrMongo.save();
+
+    const hrSql = new Hr();
+    hrSql.id = newHrMongo.idUser;
+    hrSql.fullName = striptags(body.fullName);
+    hrSql.company = striptags(body.company);
+    await hrSql.save();
+
+    await this.mailService.sendMail(
+      newHrMongo.email.toLowerCase().trim(),
+      'Link aktywacyjny do platformy HeadHunter MegaK',
+      registerEmailTemplate(newHrMongo.login, newHrMongo.registerCode),
+    );
+    return [newHrMongo, hrSql];
+  }
+
+  async createStudentsJson(files: ReceivedFiles) {
     try {
       const errorsDatabase = [];
       const errorsMailer = [];
       const allUsers = [];
       const filePath = files['user-json'][0].path;
       const data = JSON.parse(await readFile(filePath, 'utf8'));
-      for (const user of data) {
+      for (const student of data as CreateStudentDto[]) {
         try {
-          if (
-            !user.role ||
-            (user.role !== UserRole.Student &&
-              user.role !== UserRole.HeadHunter) ||
-            !validateEmail(user.email)
-          ) {
+          if (!validateEmail(student.email)) {
             throw {
               code: 'C001',
-              message: `Błedna rola, lub login: ${user.email} - Rola: ${user.role}`,
+              message: `Błędny adres email: ${student.email}`,
             };
           }
-          const newUser = await this.userModel
-            .findOneAndUpdate(
-              {
-                role: user.role,
-                email: user.email.toLowerCase().trim(),
-              },
-              {
-                idUser: uuid(),
-                role: user.role,
-                email: user.email.toLowerCase().trim(),
-                login: user.email
-                  .toLowerCase()
-                  .split('@')[0]
-                  .concat('-', uuid()),
-                activeAccount: false,
-                registerCode: uuid(),
-              },
-              {
-                lean: true,
-                upsert: true,
-                new: true,
-              },
-            )
-            .exec();
-          allUsers.push(newUser);
+          if (!(await this.userModel.findOne({ email: student.email }))) {
+            const newStudentMongo = await this.userModel.create({
+              idUser: uuid(),
+              role: UserRole.Student,
+              email: student.email.toLowerCase().trim(),
+              login: student.email
+                .toLowerCase()
+                .split('@')[0]
+                .concat('-', uuid()),
+              activeAccount: false,
+              registerCode: uuid(),
+            });
+            await newStudentMongo.save();
+
+            const studentSql = new Student();
+            studentSql.id = newStudentMongo.idUser;
+            studentSql.courseCompletion = student.courseCompletion;
+            studentSql.courseEngagement = student.courseEngagement;
+            studentSql.projectDegree = student.projectDegree;
+            studentSql.teamProjectDegree = student.teamProjectDegree;
+            studentSql.bonusProjectUrls = student.bonusProjectUrls;
+            await studentSql.save();
+
+            allUsers.push(newStudentMongo);
+          } else
+            throw {
+              code: 'C001',
+              message: `Kursant o takim adresie email: ${student.email} już istnieje`,
+            };
         } catch (err) {
           errorsDatabase.push({
             user: err.keyValue,

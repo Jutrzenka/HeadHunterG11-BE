@@ -15,6 +15,8 @@ import {
   generateErrorResponse,
   generateSuccessResponse,
 } from '../Utils/function/generateJsonResponse/generateJsonResponse';
+import * as striptags from 'striptags';
+import { RegisterUserDto } from './dto/register-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +29,6 @@ export class AuthService {
     private userDataService: UserDataService,
   ) {}
 
-  // Dopisywanie wymaganych danych podczas pierwszego logowania
   async activateMongoAccount({
     login,
     newLogin,
@@ -44,11 +45,11 @@ export class AuthService {
       throw new Error(hashPassword.error);
     }
     const filter = {
-      login,
-      registerCode,
+      login: striptags(login),
+      registerCode: striptags(registerCode),
     };
     const updateData = {
-      login: newLogin,
+      login: striptags(newLogin),
       password: hashPassword.data,
       registerCode: null,
       activeAccount: true,
@@ -58,9 +59,12 @@ export class AuthService {
     });
   }
 
-  async activateFullAccount(param, body): Promise<JsonCommunicationType> {
+  async activateFullAccount(
+    param,
+    body: RegisterUserDto,
+  ): Promise<JsonCommunicationType> {
     const { login, registerCode } = param;
-    const { newLogin, password, firstName, lastName } = body;
+    const { newLogin, password } = body;
     try {
       const mongoDbData = await this.activateMongoAccount({
         login,
@@ -71,24 +75,11 @@ export class AuthService {
       if (!mongoDbData) {
         return generateErrorResponse('C000');
       }
-      const mariaDbData = await this.userDataService.activateMariaAccount({
-        idUser: mongoDbData.idUser,
-        firstName,
-        lastName,
-      });
-
-      // if (mongoDbData.role === UserRole.Student) {
-      //   const studentInfo = new Student();
-      //   mariaDbData.infoStudent = studentInfo;
-      //   studentInfo.status = Status.Active;
-      //   await mariaDbData.save();
-      // }
-      //
-      // if (mongoDbData.role === UserRole.HeadHunter) {
-      //   const hrInfo = new Hr();
-      //   mariaDbData.infoHR = hrInfo;
-      //   await mariaDbData.save();
-      // }
+      if (mongoDbData.role === UserRole.Student) {
+        await this.userDataService.activateMariaAccount({
+          idUser: mongoDbData.idUser,
+        });
+      }
 
       return generateSuccessResponse();
     } catch (err) {
@@ -102,20 +93,24 @@ export class AuthService {
   async login(req: AuthLoginDto, res: Response) {
     try {
       const user = await this.authModel.findOne({
-        email: req.email,
+        email: striptags(req.email),
       });
       const isUser = await decryption(req.pwd, user.password);
       if (!isUser) {
         return generateErrorResponse('D000');
       }
 
-      if (user.role === UserRole.Student) {
+      if (
+        (user.role === UserRole.Student && user.activeAccount) ||
+        (user.role === UserRole.HeadHunter && user.activeAccount)
+      ) {
         const token = this.tokenService.createToken(
           await this.tokenService.generateToken(user),
           user.role,
         );
 
         return res
+          .status(200)
           .cookie('jwt', token.accessToken, {
             secure: configuration().server.ssl,
             domain: configuration().server.domain,
@@ -125,33 +120,12 @@ export class AuthService {
             generateElementResponse('object', {
               id: user.idUser,
               login: user.login,
-              role: 'STUDENT',
-            }),
-          );
-      }
-
-      if (user.role === UserRole.HeadHunter) {
-        const token = this.tokenService.createToken(
-          await this.tokenService.generateToken(user),
-          user.role,
-        );
-
-        return res
-          .cookie('jwt', token.accessToken, {
-            secure: configuration().server.ssl,
-            domain: configuration().server.domain,
-            httpOnly: true,
-          })
-          .json(
-            generateElementResponse('object', {
-              id: user.idUser,
-              login: user.login,
-              role: 'HEADHUNTER',
+              role: user.role,
             }),
           );
       }
     } catch (e) {
-      return res.json(generateErrorResponse('D000'));
+      return res.status(404).json(generateErrorResponse('D000'));
     }
   }
 
@@ -166,15 +140,10 @@ export class AuthService {
         domain: configuration().server.domain,
         httpOnly: true,
       });
-      // return res.json({ ok: true });
-      return res.json(generateSuccessResponse());
+
+      return res.status(200).json(generateSuccessResponse());
     } catch (e) {
-      // return res.json({ error: e.message });
-      return {
-        success: false,
-        typeData: 'status',
-        data: { code: 404, message: e.message },
-      };
+      return res.status(500).json(generateErrorResponse('A000'));
     }
   }
 }

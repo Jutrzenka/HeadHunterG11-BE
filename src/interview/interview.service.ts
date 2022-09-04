@@ -1,24 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { CreateInterviewDto } from './dto/create-interview.dto';
-import { UpdateInterviewDto } from './dto/update-interview.dto';
 import { Interview } from './entities/interview.entity';
 
 @Injectable()
 export class InterviewService {
-  create(createInterviewDto: CreateInterviewDto) {
-    return 'This action adds a new interview';
-  }
-
-  findAll() {
-    return `This action returns all interview`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} interview`;
-  }
-
-  update(id: number, updateInterviewDto: UpdateInterviewDto) {
-    return `This action updates a #${id} interview`;
+  async createInterview(createInterviewDto: CreateInterviewDto) {
+    const newInterview = await new Interview();
+    newInterview.hr = createInterviewDto.hr;
+    newInterview.student = createInterviewDto.student;
+    return newInterview.save();
   }
 
   async deleteInterview(id: string) {

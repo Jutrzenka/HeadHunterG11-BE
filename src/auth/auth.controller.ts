@@ -13,26 +13,21 @@ import { Response } from 'express';
 import { UserObj } from '../Utils/decorators/userobj.decorator';
 import { User } from './schema/user.schema';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
-import { UserDataService } from 'src/userData/userData.service';
 import { JwtAllGuard } from './authorization-token/guard/jwtAll.guard';
+import { RegisterUserDto } from './dto/register-user.dto';
 
 @Controller('/api/auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly userDataService: UserDataService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
-  // Przyjmowanie danych z formularza i odesłanie tokenu JWT
   @Post('/login')
   async login(@Body() req: AuthLoginDto, @Res() res: Response): Promise<any> {
     return this.authService.login(req, res);
   }
 
-  // Wylogowywanie - resetowanie tokenów itd.
   @Post('/logout')
   @UseGuards(JwtAllGuard)
-  async logout(@UserObj() user: User, @Res() res: Response): Promise<Response> {
+  async logout(@UserObj() user: User, @Res() res: Response): Promise<any> {
     return this.authService.logout(user, res);
   }
 
@@ -40,12 +35,7 @@ export class AuthController {
   async firstLogin(
     @Param() param: { login: string; registerCode: string },
     @Body()
-    body: {
-      newLogin: string;
-      password: string;
-      firstName: string;
-      lastName: string;
-    },
+    body: RegisterUserDto,
   ): Promise<JsonCommunicationType> {
     return await this.authService.activateFullAccount(param, body);
   }

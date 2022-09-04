@@ -1,25 +1,20 @@
 import { Interview } from 'src/interview/entities/interview.entity';
-import { v4 as uuid } from 'uuid';
-import {BaseEntity, Column, Entity, OneToMany, PrimaryColumn, PrimaryGeneratedColumn} from 'typeorm';
+import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 
 @Entity()
 export class Hr extends BaseEntity {
-  // @PrimaryColumn({
-  //   length: 36,
-  //   primary: true,
-  //   nullable: false,
-  //   unique: true,
-  //   default: uuid(),
-  // })
-  // id: string;
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn({
+    length: 36,
+    primary: true,
+    nullable: false,
+    unique: true,
+  })
   id: string;
 
-  // @Column({
-  //   length: 36,
-  //   nullable: false,
-  // })
-  // idUser: string;
+  @Column({
+    length: 150,
+  })
+  fullName: string;
 
   @Column()
   company: string;

@@ -31,6 +31,7 @@ import { UserObj } from '../Utils/decorators/userobj.decorator';
 import { Admin } from './schema/admin.schema';
 import { JwtAdminGuard } from './authorization-token/guard/jwtAdmin.guard';
 import { storageDir } from 'src/Utils/function/storageDir';
+import { CreateHrDto } from './dto/create-hr.dto';
 
 @Controller('/api/admin')
 export class AdminController {
@@ -47,7 +48,6 @@ export class AdminController {
     return this.adminAuthService.adminLogin(req, res);
   }
 
-  // Wylogowywanie - resetowanie tokenów itd.
   @Post('/auth/logout')
   @UseGuards(JwtAdminGuard)
   async logout(
@@ -100,7 +100,6 @@ export class AdminController {
     return this.adminService.deleteUser(idUser);
   }
 
-  // Pamiętać o zresetowaniu registerCode i wysłaniu ponownie e-maila
   @Patch('/user/:idUser')
   @UseGuards(JwtAdminGuard)
   async editEmailUser(
@@ -127,7 +126,6 @@ export class AdminController {
     return this.adminService.newPassword(idUser);
   }
 
-  // Tworzenie użytkownika
   @Put('/create')
   @UseGuards(JwtAdminGuard)
   async createOneUser(
@@ -147,7 +145,20 @@ export class AdminController {
       if (err.code === 11000) {
         return generateErrorResponse('C001');
       }
-      console.log(err);
+      return generateErrorResponse('A000');
+    }
+  }
+
+  @Post('/create/hr')
+  @UseGuards(JwtAdminGuard)
+  async createHr(@Body() body: CreateHrDto): Promise<JsonCommunicationType> {
+    try {
+      await this.adminService.createHr(body);
+      return generateSuccessResponse();
+    } catch (err) {
+      if (err.code === 11000) {
+        return generateErrorResponse('C001');
+      }
       return generateErrorResponse('A000');
     }
   }
@@ -167,7 +178,7 @@ export class AdminController {
       dest: storageDir('JsonUser'),
     }),
   )
-  async createJsonUser(
+  async createJsonStudents(
     @UploadedFiles() files: ReceivedFiles,
   ): Promise<JsonCommunicationType> {
     if (
@@ -175,6 +186,6 @@ export class AdminController {
       files['user-json'][0].mimetype !== 'application/json'
     )
       return generateErrorResponse('E000');
-    return await this.adminService.createUserJson(files);
+    return await this.adminService.createStudentsJson(files);
   }
 }

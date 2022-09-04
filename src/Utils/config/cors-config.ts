@@ -7,7 +7,7 @@ const whitelistAddress = [
   `${ssl ? 'https://' : 'http://'}register.${domain}:${port}`,
   `${ssl ? 'https://' : 'http://'}${domain}:${port}`,
 ];
-const whitelistMethod = [`GET`, 'PUT', 'POST', 'PATH'];
+const whitelistMethod = [`GET`, 'PUT', 'POST', 'PATCH', 'DELETE'];
 
 export const whitelistCors = {
   address: whitelistAddress,

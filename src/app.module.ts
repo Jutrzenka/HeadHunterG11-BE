@@ -30,7 +30,7 @@ import { MailModule } from './mail/mail.module';
       entities: ['dist/**/**.entity{.ts,.js}'],
       bigNumberStrings: false,
       logging: false,
-      synchronize: false,
+      synchronize: true,
     }),
     // Nasze moduły
     UserDataModule,

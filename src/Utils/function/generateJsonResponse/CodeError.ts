@@ -7,7 +7,16 @@ export type CodeError =
 
 type CriticalError = 'A000';
 type TemporaryError = 'B000';
-type ValidationError = 'C000' | 'C001' | 'C002' | 'C003' | 'C004';
+type ValidationError =
+  | 'C000'
+  | 'C001'
+  | 'C002'
+  | 'C003'
+  | 'C004'
+  | 'C005'
+  | 'C006'
+  | 'C007'
+  | 'C008';
 type AuthenticationError = 'D000';
 type FilesError = 'E000' | 'E001' | 'E002' | 'E003';
 
@@ -24,6 +33,16 @@ export const _allCodeError = [
   { code: 'C002', message: 'Błędne dane w body' },
   { code: 'C003', message: 'Użytkownik z takim loginem już istnieje' },
   { code: 'C004', message: 'Błędne dane w params' },
+  { code: 'C005', message: 'Taka rozmowa nie istnieje' },
+  {
+    code: 'C006',
+    message: 'Osiągnięto maksymalną ilość zarezerwowanych rozmów',
+  },
+  { code: 'C007', message: 'Nie znaleziono takiego kursanta' },
+  {
+    code: 'C008',
+    message: 'Rozmowa z tym kursantem została już zarezerwowana',
+  },
 
   // D -> Błędy przy autentykacji i autoryzacji
   { code: 'D000', message: 'Nie znaleziono takiego użytkownika' },
