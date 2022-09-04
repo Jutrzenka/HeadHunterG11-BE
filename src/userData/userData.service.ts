@@ -1,6 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { AuthService } from 'src/auth/auth.service';
-import { User } from './entities/user.entity';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { Interview } from 'src/interview/entities/interview.entity';
 import { InterviewService } from '../interview/interview.service';
@@ -9,11 +8,18 @@ import { Hr } from './entities/hr.entity';
 import { Status } from '../Utils/types/user/Student.type';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UserDocument } from '../auth/schema/user.schema';
+import { UserDocument, User } from '../auth/schema/user.schema';
 import { MailService } from '../mail/mail.service';
-import { UserRole } from '../Utils/types/user/AuthUser.type';
 import * as striptags from 'striptags';
-// import { employEmailTemplate } from '../mail/templates/employ-email.template';
+import {
+  generateArrayResponse,
+  generateElementResponse,
+  generateErrorResponse,
+  generateSuccessResponse,
+} from '../Utils/function/generateJsonResponse/generateJsonResponse';
+import { employStudentByHrEmailTemplate } from '../mail/templates/employStudentByHr-email.template';
+import { employEmailTemplate } from '../mail/templates/employ-email.template';
+import { UpdateStudentDto } from './dto/update-student.dto';
 
 @Injectable()
 export class UserDataService {
@@ -46,185 +52,178 @@ export class UserDataService {
     );
   }
 
-  async getAllStudentsForHr(): Promise<JsonCommunicationType> {
+  async getAllStudentsForHr(
+    page: number,
+    elements: number,
+  ): Promise<JsonCommunicationType> {
+    const maxPerPage = elements ? elements : 10;
+    const currentPage = page ? page : 1;
     try {
-      const users = await User.find({
-        relations: [
-          'infoStudent',
-          'infoStudent.interview',
-          'infoStudent.interview.hr',
-        ],
+      const [users, count] = await Student.findAndCount({
         where: {
-          infoStudent: true,
+          status: Status.Active,
         },
+        skip: maxPerPage * (currentPage - 1),
+        take: maxPerPage,
       });
-      const filteredUsers = users.filter(
-        (user) => user.infoStudent.interview === null,
-      );
-      return {
-        success: true,
-        typeData: 'array',
-        data: {
-          info: {
-            elements: filteredUsers.length,
-            pages: 0,
-          },
-          value: filteredUsers,
-        },
-      };
+      const totalPages = Math.ceil(count / maxPerPage);
+
+      return generateArrayResponse(count, totalPages, users);
     } catch (err) {
-      return {
-        success: false,
-        typeData: 'status',
-        data: { code: 'A0001', message: `${err}` },
-      };
+      return generateErrorResponse('A000');
     }
   }
 
-  async getStudent(idUser: string): Promise<JsonCommunicationType> {
+  async getStudentForHr(idUser: string): Promise<JsonCommunicationType> {
     try {
-      const student = await User.findOne({
-        relations: [
-          'infoStudent',
-          'infoStudent.interview',
-          'infoStudent.interview.hr',
-        ],
-        where: { idUser: idUser },
+      const student = await Student.findOne({
+        where: { id: idUser, status: Status.Active },
       });
-      if (student === null) {
-        return {
-          success: false,
-          typeData: 'status',
-          data: { code: 'A0001', message: 'User not found' },
-        };
+      if (!student) {
+        return generateErrorResponse('C007');
       }
-      return {
-        success: true,
-        typeData: 'element',
-        data: {
-          type: 'object',
-          value: student,
-        },
-      };
+      return generateElementResponse('object', student);
     } catch (e) {
-      return {
-        success: false,
-        typeData: 'status',
-        data: { code: 'A0001', message: 'Nieznany błąd na serwerze' },
-      };
+      return generateErrorResponse('A000');
     }
   }
 
-  async getAllInterviewsForHr(idHr: string): Promise<JsonCommunicationType> {
+  async getStudent(user: User): Promise<JsonCommunicationType> {
     try {
-      const interviews = await User.find({
-        relations: [
-          'infoStudent',
-          'infoStudent.interview',
-          'infoStudent.interview.hr',
-        ],
-        where: {
-          infoStudent: {
-            interview: {
-              hr: {
-                id: idHr,
-              },
-            },
-          },
-        },
+      const student = await Student.findOne({
+        where: { id: user.idUser, status: Status.Active },
       });
-      // const interviews = Interview.find({
-      //   relations: ['hr'],
-      //   where: { hr: { id: idHr } },
-      // });
-      return {
-        success: true,
-        typeData: 'array',
-        data: {
-          info: {
-            elements: interviews.length,
-            pages: 0,
-          },
-          value: interviews,
+
+      return generateElementResponse('object', student);
+    } catch (e) {
+      return generateErrorResponse('A000');
+    }
+  }
+
+  async getAllInterviewsForHr(
+    user: User,
+    page: number,
+    elements: number,
+  ): Promise<JsonCommunicationType> {
+    const maxPerPage = elements ? elements : 5;
+    const currentPage = page ? page : 1;
+    try {
+      const [interviews, count] = await Interview.findAndCount({
+        relations: ['student'],
+        where: {
+          hr: { id: user.idUser },
         },
-      };
+        skip: maxPerPage * (currentPage - 1),
+        take: maxPerPage,
+      });
+
+      const totalPages = Math.ceil(count / maxPerPage);
+
+      return generateArrayResponse(count, totalPages, interviews);
     } catch (err) {
-      return {
-        success: false,
-        typeData: 'status',
-        data: { code: 'A0001', message: `${err}` },
-      };
+      return generateErrorResponse('A000');
     }
   }
 
   async removeInterviewByHr(
+    user: User,
     id: string,
-    idHr: string,
   ): Promise<JsonCommunicationType> {
-    const student = await Student.findOne({
-      relations: ['interview'],
-      where: {
-        interview: {
-          id: id,
+    try {
+      const interview = await Interview.findOne({
+        relations: ['hr'],
+        where: {
+          hr: { id: user.idUser },
+          id,
         },
-      },
-    });
-    const hr = await Hr.findOne({ where: { id: idHr } });
-    if (student) {
-      student.interview = null;
-      await student.save();
-      hr.reservedStudents -= 1;
-      await hr.save();
+      });
+      const hr = await Hr.findOne({
+        where: { id: user.idUser },
+      });
+
+      if (interview) {
+        await this.interviewService.deleteInterview(id);
+        hr.reservedStudents -= 1;
+        await hr.save();
+
+        return generateSuccessResponse();
+      } else {
+        return generateErrorResponse('C005');
+      }
+    } catch (err) {
+      return generateErrorResponse('A000');
     }
-    await this.interviewService.deleteInterview(id);
-    return {
-      success: true,
-      typeData: 'status',
-      data: null,
-    };
   }
 
   async addToInterview(
-    infoStudentId: string,
-    idHr: string,
+    user: User,
+    studentId: string,
   ): Promise<JsonCommunicationType> {
-    const hr = await Hr.findOne({ where: { id: idHr } });
-    if (hr.reservedStudents >= 5) {
-      return {
-        success: false,
-        typeData: 'status',
-        data: {
-          code: 'A0003',
-          message: `Maksymalna ilość osób zaproszonych na rozmowę wynosi 5`,
-        },
-      };
-    }
+    const hr = await Hr.findOne({ where: { id: user.idUser } });
     const student = await Student.findOne({
-      relations: ['interview'],
-      where: { id: infoStudentId },
+      where: { id: studentId },
     });
-    if (student.interview === null) {
-      const interview = new Interview();
-      interview.hr = hr;
-      await interview.save();
+    const addedStudent = (
+      await Interview.find({
+        relations: ['student'],
+        where: {
+          hr: { id: user.idUser },
+        },
+      })
+    ).some((interview) => interview.student.id === studentId);
 
-      student.interview = interview;
-      await student.save();
+    try {
+      if (hr.reservedStudents >= 5) {
+        return generateErrorResponse('C006');
+      }
+      if (addedStudent) {
+        return generateErrorResponse('C008');
+      }
+      if (!student) {
+        return generateErrorResponse('C007');
+      }
 
-      hr.reservedStudents += 1;
-      await hr.save();
+      if (student) {
+        await this.interviewService.createInterview({ hr, student });
+
+        hr.reservedStudents += 1;
+        await hr.save();
+
+        return generateSuccessResponse();
+      }
+    } catch (e) {
+      return generateErrorResponse('A000');
     }
-
-    return {
-      success: true,
-      typeData: 'status',
-      data: null,
-    };
   }
 
-  async updateStudentInfo(idUser, body): Promise<JsonCommunicationType> {
+  async employStudent(user, studentId): Promise<JsonCommunicationType> {
+    await this.userModel.findOneAndUpdate(
+      {
+        idUser: studentId,
+      },
+      { activeAccount: false },
+    );
+
+    await Student.update({ id: studentId }, { status: Status.Employed });
+
+    const hr = await Hr.findOne({ where: { id: user.idUser } });
+
+    await this.mailService.sendMail(
+      'admin@gmail.com',
+      `Kursant został zatrudniony przez ${hr.company}`,
+      employStudentByHrEmailTemplate(studentId, hr.company),
+    );
+
+    return generateSuccessResponse();
+  }
+
+  async updateStudentInfo(
+    user: User,
+    body: UpdateStudentDto,
+    res,
+  ): Promise<JsonCommunicationType> {
     await Student.update(
-      { id: idUser },
+      { id: user.idUser },
       {
         status: body.status,
         firstName: body.firstName,
@@ -247,18 +246,21 @@ export class UserDataService {
       },
     );
     if (body.status === Status.Employed) {
-      const user = await this.userModel.findOne({ idUser });
       await this.userModel.findOneAndUpdate(
         {
           idUser: user.idUser,
         },
         { activeAccount: false },
       );
+
+      await this.mailService.sendMail(
+        'admin@gmail.com',
+        `Kursant znalazł zatrudnienie`,
+        employEmailTemplate(user.idUser),
+      );
+
+      await this.authService.logout(user, res);
     }
-    return {
-      success: true,
-      typeData: 'status',
-      data: null,
-    };
+    return generateSuccessResponse();
   }
 }

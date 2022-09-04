@@ -1,12 +1,6 @@
 import { Interview } from 'src/interview/entities/interview.entity';
 import { v4 as uuid } from 'uuid';
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  OneToMany,
-  PrimaryColumn,
-} from 'typeorm';
+import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { Status, TypeWork, ContractType } from '../../Utils/types/export';
 
 @Entity()
@@ -56,6 +50,8 @@ export class Student extends BaseEntity {
   @Column({
     nullable: true,
     default: null,
+    type: 'float',
+    precision: 9,
   })
   tel: number;
 

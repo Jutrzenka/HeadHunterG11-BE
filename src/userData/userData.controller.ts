@@ -7,12 +7,17 @@ import {
   Param,
   Patch,
   Put,
+  Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { UserDataService } from './userData.service';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
 import { JwtHrGuard } from 'src/auth/authorization-token/guard/jwtHr.guard';
 import { JwtStudentGuard } from '../auth/authorization-token/guard/jwtStudent.guard';
+import { UserObj } from '../Utils/decorators/userobj.decorator';
+import { User } from '../auth/schema/user.schema';
+import { UpdateStudentDto } from './dto/update-student.dto';
 
 @Controller('/api/user')
 export class UserDataController {
@@ -21,58 +26,77 @@ export class UserDataController {
     private userDataService: UserDataService,
   ) {}
 
+  //////////////////////////////////////HR
+
   @Get('/students')
   @UseGuards(JwtHrGuard)
-  getAllStudents(): Promise<JsonCommunicationType> {
-    return this.userDataService.getAllStudentsForHr();
+  getAllStudents(
+    @Query('page') page?: number,
+    @Query('elements') elements?: number,
+  ): Promise<JsonCommunicationType> {
+    return this.userDataService.getAllStudentsForHr(page, elements);
   }
 
   @Get('/students/interviews')
   @UseGuards(JwtHrGuard)
   async GetInterviewsUser(
-    // @TODO Zamienić Param na UserObj
-    @Param('idHr') idHr: string,
+    @UserObj() user: User,
+    @Query('page') page?: number,
+    @Query('elements') elements?: number,
   ): Promise<JsonCommunicationType> {
-    // Tymczasowa zwrotka
-    return this.userDataService.getAllInterviewsForHr(idHr);
+    return this.userDataService.getAllInterviewsForHr(user, page, elements);
   }
 
-  // @TODO Zdublować i zrobić dla Studenta
   @Get('/students/:idUser')
   @UseGuards(JwtHrGuard)
-  async getStudent(
+  async getStudentForHr(
     @Param('idUser') idUser: string,
   ): Promise<JsonCommunicationType> {
-    return this.userDataService.getStudent(idUser);
+    return this.userDataService.getStudentForHr(idUser);
   }
 
-  // @TODO Zamienić Param na UserObj
-  @Patch('/students')
-  @UseGuards(JwtStudentGuard)
-  async updateStudentInfo(
-    @Param('idUser') idUser: string,
-    @Body() body: any,
-  ): Promise<JsonCommunicationType> {
-    return this.userDataService.updateStudentInfo(idUser, body);
-  }
-
-  // @TODO Zamienić Param na UserObj
   @Delete('/students/interviews/:id')
   @UseGuards(JwtHrGuard)
   async removeInterview(
+    @UserObj() user: User,
     @Param('id') id: string,
-    @Param('idHr') idHr: string,
   ): Promise<JsonCommunicationType> {
-    return this.userDataService.removeInterviewByHr(id, idHr);
+    return this.userDataService.removeInterviewByHr(user, id);
   }
 
-  // @TODO Zamienić Param na UserObj
-  @Put('/students/interviews/:infoStudentId')
+  @Put('/students/interviews/:studentId')
   @UseGuards(JwtHrGuard)
   async addStudentToInterview(
-    @Param('infoStudentId') infoStudentId: string,
-    @Param('idHr') idHr: string,
+    @UserObj() user: User,
+    @Param('studentId') studentId: string,
   ): Promise<JsonCommunicationType> {
-    return this.userDataService.addToInterview(infoStudentId, idHr);
+    return this.userDataService.addToInterview(user, studentId);
+  }
+
+  @Patch('/students/:studentId')
+  @UseGuards(JwtHrGuard)
+  async employStudent(
+    @UserObj() user: User,
+    @Param('studentId') studentId: string,
+  ): Promise<JsonCommunicationType> {
+    return this.userDataService.employStudent(user, studentId);
+  }
+
+  ////////////////////////////////////////////// STUDENT
+
+  @Get('/student')
+  @UseGuards(JwtStudentGuard)
+  getStudent(@UserObj() user: User): Promise<JsonCommunicationType> {
+    return this.userDataService.getStudent(user);
+  }
+
+  @Patch('/student')
+  @UseGuards(JwtStudentGuard)
+  async updateStudentInfo(
+    @UserObj() user: User,
+    @Body() body: UpdateStudentDto,
+    @Res() res?: Response,
+  ): Promise<JsonCommunicationType> {
+    return this.userDataService.updateStudentInfo(user, body, res);
   }
 }

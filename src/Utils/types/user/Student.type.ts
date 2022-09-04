@@ -1,7 +1,6 @@
 export enum Status {
   Inactive = 'Inactive',
   Active = 'Active',
-  Interview = 'Interview',
   Employed = 'Employed',
 }
 
