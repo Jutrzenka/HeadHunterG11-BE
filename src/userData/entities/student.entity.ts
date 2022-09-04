@@ -1,5 +1,4 @@
 import { Interview } from 'src/interview/entities/interview.entity';
-import { v4 as uuid } from 'uuid';
 import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { Status, TypeWork, ContractType } from '../../Utils/types/export';
 
@@ -10,12 +9,10 @@ export class Student extends BaseEntity {
     primary: true,
     nullable: false,
     unique: true,
-    default: uuid(),
   })
   id: string;
 
   @Column({
-    enum: Status,
     default: Status.Inactive,
   })
   status: Status;
@@ -73,7 +70,6 @@ export class Student extends BaseEntity {
   bio: string;
 
   @Column({
-    enum: TypeWork,
     default: TypeWork.None,
   })
   expectedTypeWork: TypeWork;
@@ -84,7 +80,6 @@ export class Student extends BaseEntity {
   targetWorkCity: string;
 
   @Column({
-    enum: ContractType,
     default: ContractType.None,
   })
   expectedContractType: ContractType;

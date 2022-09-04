@@ -1,5 +1,4 @@
 import { Interview } from 'src/interview/entities/interview.entity';
-import { v4 as uuid } from 'uuid';
 import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 
 @Entity()
@@ -9,7 +8,6 @@ export class Hr extends BaseEntity {
     primary: true,
     nullable: false,
     unique: true,
-    default: uuid(),
   })
   id: string;
 
