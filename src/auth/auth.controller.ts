@@ -13,15 +13,11 @@ import { Response } from 'express';
 import { UserObj } from '../Utils/decorators/userobj.decorator';
 import { User } from './schema/user.schema';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
-import { UserDataService } from 'src/userData/userData.service';
 import { JwtAllGuard } from './authorization-token/guard/jwtAll.guard';
 
 @Controller('/api/auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly userDataService: UserDataService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('/login')
   async login(@Body() req: AuthLoginDto, @Res() res: Response): Promise<any> {
@@ -30,7 +26,7 @@ export class AuthController {
 
   @Post('/logout')
   @UseGuards(JwtAllGuard)
-  async logout(@UserObj() user: User, @Res() res: Response): Promise<Response> {
+  async logout(@UserObj() user: User, @Res() res: Response): Promise<any> {
     return this.authService.logout(user, res);
   }
 
@@ -41,8 +37,8 @@ export class AuthController {
     body: {
       newLogin: string;
       password: string;
-      firstName: string;
-      lastName: string;
+      firstName?: string;
+      lastName?: string;
     },
   ): Promise<JsonCommunicationType> {
     return await this.authService.activateFullAccount(param, body);

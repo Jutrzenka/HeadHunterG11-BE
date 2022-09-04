@@ -6,13 +6,25 @@ import { Interview } from 'src/interview/entities/interview.entity';
 import { InterviewService } from '../interview/interview.service';
 import { Student } from './entities/student.entity';
 import { Hr } from './entities/hr.entity';
+import { Status } from '../Utils/types/user/Student.type';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { UserDocument } from '../auth/schema/user.schema';
+import { MailService } from '../mail/mail.service';
+import { UserRole } from '../Utils/types/user/AuthUser.type';
+import * as striptags from 'striptags';
+// import { employEmailTemplate } from '../mail/templates/employ-email.template';
 
 @Injectable()
 export class UserDataService {
   constructor(
+    @InjectModel(User.name)
+    private userModel: Model<UserDocument>,
     @Inject(forwardRef(() => AuthService)) private authService: AuthService,
     @Inject(forwardRef(() => InterviewService))
     private interviewService: InterviewService,
+    @Inject(forwardRef(() => MailService))
+    private mailService: MailService,
   ) {}
 
   async activateMariaAccount({
@@ -23,21 +35,15 @@ export class UserDataService {
     idUser: string;
     firstName: string;
     lastName: string;
-  }): Promise<User> {
-    // if ((await this.getAllUsers()).some(user => user.email === newUser.email)) {
-    //   throw new Error("This email is already in use");
-    // }
-    try {
-      const user = new User();
-      user.idUser = idUser;
-      user.firstName = firstName;
-      user.lastName = lastName;
-      await user.save();
-
-      return user;
-    } catch (err) {
-      throw err;
-    }
+  }): Promise<any> {
+    await Student.update(
+      { id: idUser },
+      {
+        status: Status.Active,
+        firstName: striptags(firstName),
+        lastName: striptags(lastName),
+      },
+    );
   }
 
   async getAllStudentsForHr(): Promise<JsonCommunicationType> {
@@ -217,20 +223,12 @@ export class UserDataService {
   }
 
   async updateStudentInfo(idUser, body): Promise<JsonCommunicationType> {
-    const user = await User.findOne({
-      relations: [
-        'infoStudent',
-        'infoStudent.interview',
-        'infoStudent.interview.hr',
-      ],
-      where: { idUser },
-    });
-    const infoStudentID = user.infoStudent.id;
-
-    const updateStudentInfo = await Student.update(
-      { id: infoStudentID },
+    await Student.update(
+      { id: idUser },
       {
         status: body.status,
+        firstName: body.firstName,
+        lastName: body.lastName,
         bonusProjectUrls: body.bonusProjectUrls,
         tel: body.tel,
         githubUsername: body.githubUsername,
@@ -248,6 +246,15 @@ export class UserDataService {
         courses: body.courses,
       },
     );
+    if (body.status === Status.Employed) {
+      const user = await this.userModel.findOne({ idUser });
+      await this.userModel.findOneAndUpdate(
+        {
+          idUser: user.idUser,
+        },
+        { activeAccount: false },
+      );
+    }
     return {
       success: true,
       typeData: 'status',

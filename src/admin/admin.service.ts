@@ -24,6 +24,7 @@ import { Student } from '../userData/entities/student.entity';
 import { Hr } from '../userData/entities/hr.entity';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { CreateHrDto } from './dto/create-hr.dto';
+import * as striptags from 'striptags';
 
 @Injectable()
 export class AdminService {
@@ -86,8 +87,8 @@ export class AdminService {
 
     const hrSql = new Hr();
     hrSql.id = newHrMongo.idUser;
-    hrSql.fullName = body.fullName;
-    hrSql.company = body.company;
+    hrSql.fullName = striptags(body.fullName);
+    hrSql.company = striptags(body.company);
     await hrSql.save();
 
     await this.mailService.sendMail(
