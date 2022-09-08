@@ -5,7 +5,7 @@ import { Interview } from 'src/interview/entities/interview.entity';
 import { InterviewService } from '../interview/interview.service';
 import { Student } from './entities/student.entity';
 import { Hr } from './entities/hr.entity';
-import { Status } from '../Utils/types/user/Student.type';
+import { FilterStudents, Status } from '../Utils/types/user/Student.type';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserDocument, User } from '../auth/schema/user.schema';
@@ -21,6 +21,7 @@ import { employStudentByHrEmailTemplate } from '../mail/templates/employStudentB
 import { employEmailTemplate } from '../mail/templates/employ-email.template';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { validateEmail } from '../Utils/function/validateEmail';
+import { Between, MoreThanOrEqual } from 'typeorm';
 
 @Injectable()
 export class UserDataService {
@@ -46,13 +47,43 @@ export class UserDataService {
   async getAllStudentsForHr(
     page: number,
     elements: number,
+    filter: FilterStudents,
   ): Promise<JsonCommunicationType> {
     const maxPerPage = elements ? elements : 10;
     const currentPage = page ? page : 1;
+    const {
+      canTakeApprenticeship,
+      monthsOfCommercialExp,
+      courseCompletion,
+      courseEngagement,
+      expectedContractType,
+      expectedTypeWork,
+      minSalary,
+      maxSalary,
+      projectDegree,
+      teamProjectDegree,
+    } = filter;
     try {
       const [users, count] = await Student.findAndCount({
         where: {
           status: Status.Active,
+          courseCompletion:
+            courseCompletion && MoreThanOrEqual(courseCompletion),
+          courseEngagement:
+            courseEngagement && MoreThanOrEqual(courseEngagement),
+          projectDegree: projectDegree && MoreThanOrEqual(projectDegree),
+          teamProjectDegree:
+            teamProjectDegree && MoreThanOrEqual(teamProjectDegree),
+          canTakeApprenticeship,
+          monthsOfCommercialExp,
+          expectedContractType,
+          expectedTypeWork,
+          expectedSalary:
+            minSalary && maxSalary
+              ? Between(minSalary, maxSalary)
+              : minSalary
+              ? Between(minSalary, 100000)
+              : maxSalary && Between(1, maxSalary),
         },
         skip: maxPerPage * (currentPage - 1),
         take: maxPerPage,
