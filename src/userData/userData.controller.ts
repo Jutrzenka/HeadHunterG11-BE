@@ -37,6 +37,14 @@ export class UserDataController {
     return this.userDataService.getAllStudentsForHr(page, elements);
   }
 
+  @Get('/students/:idUser')
+  @UseGuards(JwtHrGuard)
+  async getStudentForHr(
+    @Param('idUser') idUser: string,
+  ): Promise<JsonCommunicationType> {
+    return this.userDataService.getStudentForHr(idUser);
+  }
+
   @Get('/students/interviews')
   @UseGuards(JwtHrGuard)
   async GetInterviewsUser(
@@ -47,19 +55,11 @@ export class UserDataController {
     return this.userDataService.getAllInterviewsForHr(user, page, elements);
   }
 
-  @Get('/students/:idUser')
-  @UseGuards(JwtHrGuard)
-  async getStudentForHr(
-    @Param('idUser') idUser: string,
-  ): Promise<JsonCommunicationType> {
-    return this.userDataService.getStudentForHr(idUser);
-  }
-
-  @Delete('/students/interviews/:id')
+  @Delete('/students/interviews/:idInterview')
   @UseGuards(JwtHrGuard)
   async removeInterview(
     @UserObj() user: User,
-    @Param('id') id: string,
+    @Param('idInterview') id: string,
   ): Promise<JsonCommunicationType> {
     return this.userDataService.removeInterviewByHr(user, id);
   }
