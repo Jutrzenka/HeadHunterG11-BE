@@ -1,6 +1,7 @@
 export default () => ({
   server: {
     ssl: process.env.SSL === 'true',
+    secure: process.env.SECURE === 'true',
     domain: process.env.DOMAIN || 'localhost',
     port: parseInt(process.env.PORT, 10) || 3000,
     salt: parseInt(process.env.SALT_ROUND),
