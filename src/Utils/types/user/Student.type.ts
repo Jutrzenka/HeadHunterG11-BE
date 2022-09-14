@@ -1,3 +1,5 @@
+import * as striptags from 'striptags';
+
 export enum Status {
   Inactive = 'Inactive',
   Active = 'Active',
@@ -17,4 +19,17 @@ export enum ContractType {
   UoP = 'UoP',
   B2B = 'B2B',
   UoD = 'UZ/UoD',
+}
+
+export interface FilterStudents {
+  minSalary?: number;
+  maxSalary?: number;
+  expectedTypeWork?: TypeWork;
+  expectedContractType?: ContractType;
+  canTakeApprenticeship?: boolean;
+  monthsOfCommercialExp?: number;
+  courseCompletion?: number;
+  courseEngagement?: number;
+  projectDegree?: number;
+  teamProjectDegree?: number;
 }

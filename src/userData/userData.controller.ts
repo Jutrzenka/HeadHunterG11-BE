@@ -18,6 +18,7 @@ import { JwtStudentGuard } from '../auth/authorization-token/guard/jwtStudent.gu
 import { UserObj } from '../Utils/decorators/userobj.decorator';
 import { User } from '../auth/schema/user.schema';
 import { UpdateStudentDto } from './dto/update-student.dto';
+import { FilterStudents } from '../Utils/types/user/Student.type';
 
 @Controller('/api/user')
 export class UserDataController {
@@ -33,8 +34,9 @@ export class UserDataController {
   getAllStudents(
     @Query('page') page?: number,
     @Query('elements') elements?: number,
+    @Query() filter?: FilterStudents,
   ): Promise<JsonCommunicationType> {
-    return this.userDataService.getAllStudentsForHr(page, elements);
+    return this.userDataService.getAllStudentsForHr(page, elements, filter);
   }
 
   @Get('/students/:idUser')
