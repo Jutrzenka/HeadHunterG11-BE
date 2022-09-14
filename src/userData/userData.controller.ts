@@ -39,14 +39,6 @@ export class UserDataController {
     return this.userDataService.getAllStudentsForHr(page, elements, filter);
   }
 
-  @Get('/students/:idUser')
-  @UseGuards(JwtHrGuard)
-  async getStudentForHr(
-    @Param('idUser') idUser: string,
-  ): Promise<JsonCommunicationType> {
-    return this.userDataService.getStudentForHr(idUser);
-  }
-
   @Get('/students/interviews')
   @UseGuards(JwtHrGuard)
   async GetInterviewsUser(
@@ -55,6 +47,14 @@ export class UserDataController {
     @Query('elements') elements?: number,
   ): Promise<JsonCommunicationType> {
     return this.userDataService.getAllInterviewsForHr(user, page, elements);
+  }
+
+  @Get('/students/:idUser')
+  @UseGuards(JwtHrGuard)
+  async getStudentForHr(
+    @Param('idUser') idUser: string,
+  ): Promise<JsonCommunicationType> {
+    return this.userDataService.getStudentForHr(idUser);
   }
 
   @Delete('/students/interviews/:idInterview')

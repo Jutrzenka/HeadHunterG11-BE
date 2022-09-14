@@ -126,7 +126,7 @@ export class AdminController {
     return this.adminService.newPassword(idUser);
   }
 
-  @Put('/create')
+  @Put('/create/student')
   @UseGuards(JwtAdminGuard)
   async createOneUser(
     @Body() { email, role }: { email: string; role: UserRole },
@@ -149,7 +149,7 @@ export class AdminController {
     }
   }
 
-  @Post('/create/hr')
+  @Put('/create/hr')
   @UseGuards(JwtAdminGuard)
   async createHr(@Body() body: CreateHrDto): Promise<JsonCommunicationType> {
     try {
