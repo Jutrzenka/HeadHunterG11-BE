@@ -6,6 +6,7 @@ import {
   generateElementResponse,
   generateErrorResponse,
   generateSuccessResponse,
+  RestStandardError,
 } from '../Utils/function/generateJsonResponse/generateJsonResponse';
 import { Response } from 'express';
 import { decryption } from '../Utils/function/bcrypt';
@@ -27,9 +28,13 @@ export class AdminAuthService {
       const admin = await this.adminModel.findOne({
         login: req.login,
       });
+      if (!admin) {
+        throw new RestStandardError('Błędny login', 400);
+      }
+
       const isAdmin = await decryption(req.pwd, admin.password);
       if (!isAdmin) {
-        return res.json(generateErrorResponse('D000'));
+        throw new RestStandardError('Błędne hasło', 400);
       }
 
       const token = this.adminTokenService.createAdminToken(
@@ -42,6 +47,7 @@ export class AdminAuthService {
         .cookie('jwtAdmin', token.accessToken, {
           secure: configuration().server.ssl,
           domain: configuration().server.domain,
+          sameSite: 'none',
           httpOnly: true,
         })
         .json(
@@ -51,8 +57,8 @@ export class AdminAuthService {
             role: 'ADMIN',
           }),
         );
-    } catch (e) {
-      return res.json(generateErrorResponse('D000'));
+    } catch (err) {
+      return res.json(generateErrorResponse(err, err.message, err.status));
     }
   }
 
@@ -68,8 +74,8 @@ export class AdminAuthService {
         httpOnly: true,
       });
       return res.json(generateSuccessResponse());
-    } catch (e) {
-      return res.json(generateErrorResponse('A000'));
+    } catch (err) {
+      return res.json(generateErrorResponse(err, err.message, err.status));
     }
   }
 }

@@ -1,5 +1,3 @@
-import * as striptags from 'striptags';
-
 export enum Status {
   Inactive = 'Inactive',
   Active = 'Active',
