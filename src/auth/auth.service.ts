@@ -74,10 +74,7 @@ export class AuthService {
         registerCode,
       });
       if (!mongoDbData) {
-        throw new RestStandardError(
-          'Błędny link do pierwszej rejestracji',
-          400,
-        );
+        throw new RestStandardError('Błędny link do rejestracji', 400);
       }
       if (mongoDbData.role === UserRole.Student) {
         await this.userDataService.activateMariaAccount({

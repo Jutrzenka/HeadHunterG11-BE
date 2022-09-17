@@ -255,15 +255,48 @@ export class UserDataService {
     }
   }
 
+  async getEmploy(user, res): Promise<JsonCommunicationType> {
+    try {
+      await this.userModel.findOneAndUpdate(
+        {
+          idUser: user.idUser,
+          activeAccount: true,
+        },
+        { activeAccount: false },
+      );
+
+      await Student.update({ id: user.idUser }, { status: Status.Employed });
+
+      await this.mailService.sendMail(
+        'admin@gmail.com',
+        `Kursant znalazł zatrudnienie`,
+        employEmailTemplate(user.idUser),
+      );
+
+      await this.authService.logout(user, res);
+
+      return res.json(generateSuccessResponse());
+    } catch (err) {
+      return res.json(generateErrorResponse(err, err.message, err.status));
+    }
+  }
+
   async updateStudentInfo(
     user: User,
     body: UpdateStudentDto,
-    res,
   ): Promise<JsonCommunicationType> {
     try {
       if (!body) {
         throw new RestStandardError('Brak danych do aktualizacji', 400);
       }
+
+      if (body.email && validateEmail(body.email)) {
+        await this.userModel.findOneAndUpdate(
+          { idUser: user.idUser },
+          { email: body.email },
+        );
+      }
+
       await Student.update(
         { id: user.idUser },
         {
@@ -286,31 +319,9 @@ export class UserDataService {
           courses: striptags(body.courses),
         },
       );
-      if (validateEmail(body.email)) {
-        await this.userModel.findOneAndUpdate(
-          { idUser: user.idUser },
-          { email: body.email },
-        );
-      }
-      if (body.status === Status.Employed) {
-        await this.userModel.findOneAndUpdate(
-          {
-            idUser: user.idUser,
-          },
-          { activeAccount: false },
-        );
-
-        await this.mailService.sendMail(
-          'admin@gmail.com',
-          `Kursant znalazł zatrudnienie`,
-          employEmailTemplate(user.idUser),
-        );
-
-        await this.authService.logout(user, res);
-      }
-      return res.json(generateSuccessResponse());
+      return generateSuccessResponse();
     } catch (err) {
-      return res.json(generateErrorResponse(err, err.message, err.status));
+      return generateErrorResponse(err, err.message, err.status);
     }
   }
 }
