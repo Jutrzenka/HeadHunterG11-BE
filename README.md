@@ -11,7 +11,7 @@ Application as a recruitment platform. It connects the participants of the MegaK
 ![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
 ![MySQL](https://img.shields.io/badge/mysql-%2300f.svg?style=for-the-badge&logo=mysql&logoColor=white)
 ## :guardsman: Authors:
-**Group members (nickname on GitHub):**
+**Group members:**
 1. [Jutrzenka](https://github.com/Jutrzenka) **Jutrzenka#2251** kacperczaja1999@gmail.com
 2. [iwanczakrafal](https://github.com/iwanczakrafal)
 3. [madridista5](https://github.com/madridista5)
