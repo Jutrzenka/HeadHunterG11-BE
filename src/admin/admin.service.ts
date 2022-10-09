@@ -10,6 +10,7 @@ import {
   generateElementResponse,
   generateErrorResponse,
   generateSuccessResponse,
+  RestStandardError,
 } from '../Utils/function/generateJsonResponse/generateJsonResponse';
 import { MailService } from '../mail/mail.service';
 import {
@@ -25,6 +26,7 @@ import { Hr } from '../userData/entities/hr.entity';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { CreateHrDto } from './dto/create-hr.dto';
 import * as striptags from 'striptags';
+import { UserDataService } from '../userData/userData.service';
 
 @Injectable()
 export class AdminService {
@@ -33,74 +35,97 @@ export class AdminService {
     private userModel: Model<UserDocument>,
     @Inject(forwardRef(() => MailService))
     private mailService: MailService,
+    @Inject(forwardRef(() => UserDataService))
+    private userDataService: UserDataService,
   ) {}
 
-  async createUser({
-    email,
-    role,
-  }: {
-    email: string;
-    role: UserRole;
-  }): Promise<[User, Student | Hr]> {
-    const newUser = await this.userModel.create({
-      idUser: uuid(),
-      role,
-      email: email.toLowerCase().trim(),
-      login: email.toLowerCase().split('@')[0].concat('-', uuid()),
-      activeAccount: false,
-      registerCode: uuid(),
-    });
-    await newUser.save();
+  async createStudent(body: CreateStudentDto): Promise<JsonCommunicationType> {
+    try {
+      const newStudentMongo = await this.userModel.create({
+        idUser: uuid(),
+        role: UserRole.Student,
+        email: body.email.toLowerCase().trim(),
+        login: body.email.toLowerCase().split('@')[0].concat('-', uuid()),
+        activeAccount: false,
+        registerCode: uuid(),
+      });
+      await newStudentMongo.save();
 
-    let user;
-    if (newUser.role === UserRole.Student) {
-      const student = new Student();
-      student.id = newUser.idUser;
-      await student.save();
-      user = student;
-    }
+      const newStudentSql = new Student();
+      newStudentSql.id = newStudentMongo.idUser;
+      newStudentSql.courseCompletion = body.courseCompletion;
+      newStudentSql.courseEngagement = body.courseEngagement;
+      newStudentSql.projectDegree = body.projectDegree;
+      newStudentSql.teamProjectDegree = body.teamProjectDegree;
+      newStudentSql.bonusProjectUrls = body.bonusProjectUrls;
+      await newStudentSql.save();
 
-    if (newUser.role === UserRole.HeadHunter) {
-      const hr = new Hr();
-      hr.id = newUser.idUser;
-      await hr.save();
-      user = hr;
+      await this.mailService.sendMail(
+        body.email.toLowerCase().trim(),
+        'Link aktywacyjny do platformy HeadHunter MegaK',
+        registerEmailTemplate(
+          newStudentMongo.login,
+          newStudentMongo.registerCode,
+        ),
+      );
+      return generateElementResponse('object', newStudentMongo);
+    } catch (err) {
+      if (err.code === 11000) {
+        throw new RestStandardError(
+          'Unikalne dane nie mogą się duplikować',
+          400,
+        );
+      }
+      return generateErrorResponse(err, err.message, err.status);
     }
-    await this.mailService.sendMail(
-      email.toLowerCase().trim(),
-      'Link aktywacyjny do platformy HeadHunter MegaK',
-      registerEmailTemplate(newUser.login, newUser.registerCode),
-    );
-    return [newUser, user];
   }
 
-  async createHr(body: CreateHrDto): Promise<[User, Hr]> {
-    const newHrMongo = await this.userModel.create({
-      idUser: uuid(),
-      role: UserRole.HeadHunter,
-      email: body.email.toLowerCase().trim(),
-      login: body.email.toLowerCase().split('@')[0].concat('-', uuid()),
-      activeAccount: false,
-      registerCode: uuid(),
-    });
-    await newHrMongo.save();
+  async createHr(body: CreateHrDto): Promise<JsonCommunicationType> {
+    try {
+      const newHrMongo = await this.userModel.create({
+        idUser: uuid(),
+        role: UserRole.HeadHunter,
+        email: body.email.toLowerCase().trim(),
+        login: body.email.toLowerCase().split('@')[0].concat('-', uuid()),
+        activeAccount: false,
+        registerCode: uuid(),
+      });
+      await newHrMongo.save();
 
-    const hrSql = new Hr();
-    hrSql.id = newHrMongo.idUser;
-    hrSql.fullName = striptags(body.fullName);
-    hrSql.company = striptags(body.company);
-    await hrSql.save();
+      const hrSql = new Hr();
+      hrSql.id = newHrMongo.idUser;
+      hrSql.fullName = striptags(body.fullName);
+      hrSql.company = striptags(body.company);
+      await hrSql.save();
 
-    await this.mailService.sendMail(
-      newHrMongo.email.toLowerCase().trim(),
-      'Link aktywacyjny do platformy HeadHunter MegaK',
-      registerEmailTemplate(newHrMongo.login, newHrMongo.registerCode),
-    );
-    return [newHrMongo, hrSql];
+      await this.mailService.sendMail(
+        newHrMongo.email.toLowerCase().trim(),
+        'Link aktywacyjny do platformy HeadHunter MegaK',
+        registerEmailTemplate(newHrMongo.login, newHrMongo.registerCode),
+      );
+      return generateElementResponse('object', newHrMongo);
+    } catch (err) {
+      if (err.code === 11000) {
+        throw new RestStandardError(
+          'Unikalne dane nie mogą się duplikować',
+          400,
+        );
+      }
+      return generateErrorResponse(err, err.message, err.status);
+    }
   }
 
   async createStudentsJson(files: ReceivedFiles) {
     try {
+      if (
+        !files['user-json'] ||
+        files['user-json'][0].mimetype !== 'application/json'
+      ) {
+        throw new RestStandardError(
+          'Nie wysłano pliku, lub był w złym formacie',
+          415,
+        );
+      }
       const errorsDatabase = [];
       const errorsMailer = [];
       const allUsers = [];
@@ -109,10 +134,7 @@ export class AdminService {
       for (const student of data as CreateStudentDto[]) {
         try {
           if (!validateEmail(student.email)) {
-            throw {
-              code: 'C001',
-              message: `Błędny adres email: ${student.email}`,
-            };
+            throw { message: `Błedny email ${student.email}` };
           }
           if (!(await this.userModel.findOne({ email: student.email }))) {
             const newStudentMongo = await this.userModel.create({
@@ -140,13 +162,11 @@ export class AdminService {
             allUsers.push(newStudentMongo);
           } else
             throw {
-              code: 'C001',
               message: `Kursant o takim adresie email: ${student.email} już istnieje`,
             };
         } catch (err) {
           errorsDatabase.push({
             user: err.keyValue,
-            code: err.code,
             message: err.message,
           });
         }
@@ -161,7 +181,6 @@ export class AdminService {
         } catch (err) {
           errorsMailer.push({
             user: err,
-            code: err.code,
             message: err.message,
           });
         }
@@ -169,7 +188,10 @@ export class AdminService {
       try {
         if (files['user-json']) await unlink(files['user-json'][0].path);
       } catch (err) {
-        return generateErrorResponse('E003');
+        throw new RestStandardError(
+          'Nie udało się usunąć pliku na końcu zapytania',
+          500,
+        );
       }
       return generateElementResponse('object', {
         numberOfSuccesses: allUsers.length,
@@ -180,10 +202,13 @@ export class AdminService {
     } catch (err) {
       try {
         await unlink(files['user-json'][0].path);
-      } catch (err2) {
-        return generateErrorResponse('E002');
+      } catch (err) {
+        throw new RestStandardError(
+          'Nieznany błąd i nie udało się usunąć pliku, albo określonego pliku już brak',
+          400,
+        );
       }
-      return generateErrorResponse('E001');
+      return generateErrorResponse(err, err.message, err.status);
     }
   }
 
@@ -197,12 +222,15 @@ export class AdminService {
     filter: string;
   }): Promise<JsonCommunicationType> {
     try {
+      if (limit > 50 || limit < 1 || page < 1) {
+        throw new RestStandardError('Błędne dane w body', 400);
+      }
       return await searchUsersInMongo(
         { role: UserRole.Student, limit, page, filter },
         this.userModel,
       );
     } catch (err) {
-      return generateErrorResponse('A000');
+      return generateErrorResponse(err, err.message, err.status);
     }
   }
 
@@ -216,25 +244,35 @@ export class AdminService {
     filter: string;
   }): Promise<JsonCommunicationType> {
     try {
+      if (limit > 50 || limit < 1 || page < 1) {
+        throw new RestStandardError('Błędne dane w body', 400);
+      }
       return await searchUsersInMongo(
         { role: UserRole.HeadHunter, limit, page, filter },
         this.userModel,
       );
     } catch (err) {
-      return generateErrorResponse('A000');
+      return generateErrorResponse(err, err.message, err.status);
     }
   }
 
   async deleteUser(idUser: string): Promise<JsonCommunicationType> {
     try {
+      if (!idUser || idUser.length !== 36) {
+        throw new RestStandardError('Niepoprawne ID', 400);
+      }
+      const user = await this.userModel.findOne({ idUser });
       const status = await this.userModel.deleteOne({ idUser }).exec();
       if (status.deletedCount !== 1) {
-        return generateErrorResponse('D000');
+        throw new RestStandardError('Nie udało się usunąć użytkownika', 500);
       } else {
+        user.role === UserRole.Student
+          ? await Student.delete({ id: idUser })
+          : await Hr.delete({ id: idUser });
         return generateSuccessResponse();
       }
     } catch (err) {
-      return generateErrorResponse('A000');
+      return generateErrorResponse(err, err.message, err.status);
     }
   }
 
@@ -243,6 +281,12 @@ export class AdminService {
     newEmail: string,
   ): Promise<JsonCommunicationType> {
     try {
+      if (!validateEmail(newEmail)) {
+        throw new RestStandardError('Niepoprawny adres email', 400);
+      }
+      if (!idUser || idUser.length !== 36) {
+        throw new RestStandardError('Niepoprawne ID', 400);
+      }
       const user = await this.userModel
         .findOneAndUpdate(
           { idUser },
@@ -256,7 +300,7 @@ export class AdminService {
         )
         .exec();
       if (user === null) {
-        return generateErrorResponse('D000');
+        throw new RestStandardError('Taki użytkownik nie istnieje', 404);
       } else {
         await this.mailService.sendMail(
           user.email.toLowerCase().trim(),
@@ -267,14 +311,20 @@ export class AdminService {
       }
     } catch (err) {
       if (err.code === 11000) {
-        return generateErrorResponse('C001');
+        throw new RestStandardError(
+          'Unikalne dane nie mogą się duplikować',
+          400,
+        );
       }
-      return generateErrorResponse('A000');
+      return generateErrorResponse(err, err.message, err.status);
     }
   }
 
   async newPassword(idUser: string): Promise<JsonCommunicationType> {
     try {
+      if (!idUser || idUser.length !== 36) {
+        throw new RestStandardError('Niepoprawne ID', 400);
+      }
       const user = await this.userModel
         .findOneAndUpdate(
           { idUser },
@@ -287,7 +337,7 @@ export class AdminService {
         )
         .exec();
       if (user === null) {
-        return generateErrorResponse('D000');
+        throw new RestStandardError('Taki użytkownik nie istnieje', 404);
       } else {
         await this.mailService.sendMail(
           user.email.toLowerCase().trim(),
@@ -298,9 +348,12 @@ export class AdminService {
       }
     } catch (err) {
       if (err.code === 11000) {
-        return generateErrorResponse('C001');
+        throw new RestStandardError(
+          'Unikalne dane nie mogą się duplikować',
+          400,
+        );
       }
-      return generateErrorResponse('A000');
+      return generateErrorResponse(err, err.message, err.status);
     }
   }
 }

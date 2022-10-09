@@ -25,11 +25,7 @@ async function bootstrap() {
     }),
   );
   app.use(cookieParser());
-  app.use(
-    helmet({
-      contentSecurityPolicy: false,
-    }),
-  );
+  app.use(helmet({ contentSecurityPolicy: false }));
   app.enableCors({
     origin: whitelistCors.address,
     methods: whitelistCors.methods,

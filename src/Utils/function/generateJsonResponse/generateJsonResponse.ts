@@ -1,5 +1,5 @@
 import { JsonCommunicationType } from '../../types/data/JsonCommunicationType';
-import { CodeError, _allCodeError } from './CodeError';
+import { HttpException } from '@nestjs/common';
 
 export const generateSuccessResponse = (): JsonCommunicationType => {
   return {
@@ -41,13 +41,27 @@ export const generateArrayResponse = (
   };
 };
 
+export class RestStandardError extends HttpException {
+  constructor(response: string | Record<string, any>, status: number) {
+    super(
+      {
+        success: false,
+        message: response,
+        data: null,
+      },
+      status,
+    );
+  }
+}
+
 export const generateErrorResponse = (
-  code: CodeError,
+  error: Error,
+  response: string,
+  status: number,
 ): JsonCommunicationType => {
-  const text = _allCodeError.filter((value) => value.code === code)[0];
-  return {
-    success: false,
-    typeData: 'status',
-    data: { code, message: text.message ?? 'Nieznany błąd' },
-  };
+  if (error instanceof RestStandardError) {
+    throw new RestStandardError(response, status);
+  }
+  console.error(error);
+  throw new RestStandardError('Nieznany błąd na serwerze. Przepraszamy', 500);
 };

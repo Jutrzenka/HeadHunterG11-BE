@@ -88,7 +88,7 @@ export class UserDataController {
 
   @Get('/student')
   @UseGuards(JwtStudentGuard)
-  getStudent(@UserObj() user: User): Promise<JsonCommunicationType> {
+  async getStudent(@UserObj() user: User): Promise<JsonCommunicationType> {
     return this.userDataService.getStudent(user);
   }
 
@@ -97,8 +97,16 @@ export class UserDataController {
   async updateStudentInfo(
     @UserObj() user: User,
     @Body() body: UpdateStudentDto,
-    @Res() res?: Response,
   ): Promise<JsonCommunicationType> {
-    return this.userDataService.updateStudentInfo(user, body, res);
+    return this.userDataService.updateStudentInfo(user, body);
+  }
+
+  @Patch('/student/employ')
+  @UseGuards(JwtStudentGuard)
+  async getEmploy(
+    @UserObj() user: User,
+    @Res() res: Response,
+  ): Promise<JsonCommunicationType> {
+    return this.userDataService.getEmploy(user, res);
   }
 }

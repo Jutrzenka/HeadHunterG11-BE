@@ -8,12 +8,14 @@ import { AdminAuthService } from './admin-auth.service';
 import { JwtAdminStrategy } from './authorization-token/jwtAdmin.strategy';
 import { AdminTokenService } from './authorization-token/admin-token.service';
 import { MailModule } from '../mail/mail.module';
+import { UserDataModule } from '../userData/userData.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Admin.name, schema: AdminSchema }]),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     forwardRef(() => MailModule),
+    forwardRef(() => UserDataModule),
   ],
   controllers: [AdminController],
   providers: [

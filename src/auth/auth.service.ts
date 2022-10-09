@@ -14,6 +14,7 @@ import {
   generateElementResponse,
   generateErrorResponse,
   generateSuccessResponse,
+  RestStandardError,
 } from '../Utils/function/generateJsonResponse/generateJsonResponse';
 import * as striptags from 'striptags';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -73,7 +74,7 @@ export class AuthService {
         registerCode,
       });
       if (!mongoDbData) {
-        return generateErrorResponse('C000');
+        throw new RestStandardError('Błędny link do rejestracji', 400);
       }
       if (mongoDbData.role === UserRole.Student) {
         await this.userDataService.activateMariaAccount({
@@ -84,9 +85,12 @@ export class AuthService {
       return generateSuccessResponse();
     } catch (err) {
       if (err.code === 11000) {
-        return generateErrorResponse('C003');
+        throw new RestStandardError(
+          'Użytkownik z takim loginem już istnieje',
+          400,
+        );
       }
-      return generateErrorResponse('A000');
+      return generateErrorResponse(err, err.message, err.status);
     }
   }
 
@@ -95,9 +99,15 @@ export class AuthService {
       const user = await this.authModel.findOne({
         email: striptags(req.email),
       });
+
+      if (!user) {
+        throw new RestStandardError('Błędny email', 400);
+      }
+
       const isUser = await decryption(req.pwd, user.password);
+
       if (!isUser) {
-        return generateErrorResponse('D000');
+        throw new RestStandardError('Błędne hasło', 400);
       }
 
       if (
@@ -125,8 +135,8 @@ export class AuthService {
             }),
           );
       }
-    } catch (e) {
-      return res.status(404).json(generateErrorResponse('D000'));
+    } catch (err) {
+      return res.json(generateErrorResponse(err, err.message, err.status));
     }
   }
 
@@ -139,8 +149,8 @@ export class AuthService {
       res.clearCookie('jwt');
 
       return res.status(200).json(generateSuccessResponse());
-    } catch (e) {
-      return res.status(500).json(generateErrorResponse('A000'));
+    } catch (err) {
+      return res.json(generateErrorResponse(err, err.message, err.status));
     }
   }
 }

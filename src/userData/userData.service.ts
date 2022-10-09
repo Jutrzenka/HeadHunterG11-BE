@@ -16,6 +16,7 @@ import {
   generateElementResponse,
   generateErrorResponse,
   generateSuccessResponse,
+  RestStandardError,
 } from '../Utils/function/generateJsonResponse/generateJsonResponse';
 import { employStudentByHrEmailTemplate } from '../mail/templates/employStudentByHr-email.template';
 import { employEmailTemplate } from '../mail/templates/employ-email.template';
@@ -49,8 +50,8 @@ export class UserDataService {
     elements: number,
     filter: FilterStudents,
   ): Promise<JsonCommunicationType> {
-    const maxPerPage = elements ? elements : 10;
-    const currentPage = page ? page : 1;
+    const maxPerPage = elements <= 10 ? 10 : elements;
+    const currentPage = page <= 1 ? 1 : page;
     const {
       canTakeApprenticeship,
       monthsOfCommercialExp,
@@ -92,7 +93,7 @@ export class UserDataService {
 
       return generateArrayResponse(count, totalPages, users);
     } catch (err) {
-      return generateErrorResponse('A000');
+      return generateErrorResponse(err, err.message, err.status);
     }
   }
 
@@ -102,11 +103,11 @@ export class UserDataService {
         where: { id: idUser, status: Status.Active },
       });
       if (!student) {
-        return generateErrorResponse('C007');
+        throw new RestStandardError('Nie znaleziono takiego kursanta', 404);
       }
       return generateElementResponse('object', student);
-    } catch (e) {
-      return generateErrorResponse('A000');
+    } catch (err) {
+      return generateErrorResponse(err, err.message, err.status);
     }
   }
 
@@ -117,8 +118,8 @@ export class UserDataService {
       });
 
       return generateElementResponse('object', student);
-    } catch (e) {
-      return generateErrorResponse('A000');
+    } catch (err) {
+      return generateErrorResponse(err, err.message, err.status);
     }
   }
 
@@ -127,8 +128,8 @@ export class UserDataService {
     page: number,
     elements: number,
   ): Promise<JsonCommunicationType> {
-    const maxPerPage = elements ? elements : 5;
-    const currentPage = page ? page : 1;
+    const maxPerPage = elements <= 5 ? 5 : elements;
+    const currentPage = page <= 1 ? 1 : page;
     try {
       const [interviews, count] = await Interview.findAndCount({
         relations: ['student'],
@@ -143,7 +144,7 @@ export class UserDataService {
 
       return generateArrayResponse(count, totalPages, interviews);
     } catch (err) {
-      return generateErrorResponse('A000');
+      return generateErrorResponse(err, err.message, err.status);
     }
   }
 
@@ -170,10 +171,10 @@ export class UserDataService {
 
         return generateSuccessResponse();
       } else {
-        return generateErrorResponse('C005');
+        throw new RestStandardError('Taka rozmowa nie istnieje', 404);
       }
     } catch (err) {
-      return generateErrorResponse('A000');
+      return generateErrorResponse(err, err.message, err.status);
     }
   }
 
@@ -196,13 +197,19 @@ export class UserDataService {
 
     try {
       if (hr.reservedStudents >= 5) {
-        return generateErrorResponse('C006');
+        throw new RestStandardError(
+          'Osiągnięto maksymalną ilość zarezerwowanych rozmów',
+          400,
+        );
       }
       if (addedStudent) {
-        return generateErrorResponse('C008');
+        throw new RestStandardError(
+          'Rozmowa z tym kursantem została już zarezerwowana',
+          400,
+        );
       }
       if (!student) {
-        return generateErrorResponse('C007');
+        throw new RestStandardError('Nie znaleziono takiego kursanta', 404);
       }
 
       if (student) {
@@ -213,72 +220,52 @@ export class UserDataService {
 
         return generateSuccessResponse();
       }
-    } catch (e) {
-      return generateErrorResponse('A000');
+    } catch (err) {
+      return generateErrorResponse(err, err.message, err.status);
     }
   }
 
   async employStudent(user, studentId): Promise<JsonCommunicationType> {
-    await this.userModel.findOneAndUpdate(
-      {
-        idUser: studentId,
-      },
-      { activeAccount: false },
-    );
-
-    await Student.update({ id: studentId }, { status: Status.Employed });
-
-    const hr = await Hr.findOne({ where: { id: user.idUser } });
-
-    await this.mailService.sendMail(
-      'admin@gmail.com',
-      `Kursant został zatrudniony przez ${hr.company}`,
-      employStudentByHrEmailTemplate(studentId, hr.company),
-    );
-
-    return generateSuccessResponse();
-  }
-
-  async updateStudentInfo(
-    user: User,
-    body: UpdateStudentDto,
-    res,
-  ): Promise<JsonCommunicationType> {
-    await Student.update(
-      { id: user.idUser },
-      {
-        status: body.status,
-        firstName: striptags(body.firstName),
-        lastName: striptags(body.lastName),
-        tel: body.tel,
-        githubUsername: striptags(body.githubUsername),
-        portfolioUrls: body.portfolioUrls,
-        projectUrls: body.projectUrls,
-        bio: striptags(body.bio),
-        expectedTypeWork: body.expectedTypeWork,
-        targetWorkCity: striptags(body.targetWorkCity),
-        expectedContractType: body.expectedContractType,
-        expectedSalary: body.expectedSalary,
-        canTakeApprenticeship: body.canTakeApprenticeship,
-        monthsOfCommercialExp: body.monthsOfCommercialExp,
-        education: striptags(body.education),
-        workExperience: striptags(body.workExperience),
-        courses: striptags(body.courses),
-      },
-    );
-    if (validateEmail(body.email)) {
-      await this.userModel.findOneAndUpdate(
-        { idUser: user.idUser },
-        { email: body.email },
-      );
-    }
-    if (body.status === Status.Employed) {
-      await this.userModel.findOneAndUpdate(
+    try {
+      const student = await this.userModel.findOneAndUpdate(
         {
-          idUser: user.idUser,
+          idUser: studentId,
+          activeAccount: true,
         },
         { activeAccount: false },
       );
+
+      if (!student) {
+        throw new RestStandardError('Kursant już został zatrudniony ', 400);
+      }
+
+      await Student.update({ id: studentId }, { status: Status.Employed });
+
+      const hr = await Hr.findOne({ where: { id: user.idUser } });
+
+      await this.mailService.sendMail(
+        'admin@gmail.com',
+        `Kursant został zatrudniony przez ${hr.company}`,
+        employStudentByHrEmailTemplate(studentId, hr.company),
+      );
+
+      return generateSuccessResponse();
+    } catch (err) {
+      return generateErrorResponse(err, err.message, err.status);
+    }
+  }
+
+  async getEmploy(user, res): Promise<JsonCommunicationType> {
+    try {
+      await this.userModel.findOneAndUpdate(
+        {
+          idUser: user.idUser,
+          activeAccount: true,
+        },
+        { activeAccount: false },
+      );
+
+      await Student.update({ id: user.idUser }, { status: Status.Employed });
 
       await this.mailService.sendMail(
         'admin@gmail.com',
@@ -287,7 +274,54 @@ export class UserDataService {
       );
 
       await this.authService.logout(user, res);
+
+      return res.json(generateSuccessResponse());
+    } catch (err) {
+      return res.json(generateErrorResponse(err, err.message, err.status));
     }
-    return res.json(generateSuccessResponse());
+  }
+
+  async updateStudentInfo(
+    user: User,
+    body: UpdateStudentDto,
+  ): Promise<JsonCommunicationType> {
+    try {
+      if (!body) {
+        throw new RestStandardError('Brak danych do aktualizacji', 400);
+      }
+
+      if (body.email && validateEmail(body.email)) {
+        await this.userModel.findOneAndUpdate(
+          { idUser: user.idUser },
+          { email: body.email },
+        );
+      }
+
+      await Student.update(
+        { id: user.idUser },
+        {
+          status: body.status,
+          firstName: striptags(body.firstName),
+          lastName: striptags(body.lastName),
+          tel: body.tel,
+          githubUsername: striptags(body.githubUsername),
+          portfolioUrls: body.portfolioUrls,
+          projectUrls: body.projectUrls,
+          bio: striptags(body.bio),
+          expectedTypeWork: body.expectedTypeWork,
+          targetWorkCity: striptags(body.targetWorkCity),
+          expectedContractType: body.expectedContractType,
+          expectedSalary: body.expectedSalary,
+          canTakeApprenticeship: body.canTakeApprenticeship,
+          monthsOfCommercialExp: body.monthsOfCommercialExp,
+          education: striptags(body.education),
+          workExperience: striptags(body.workExperience),
+          courses: striptags(body.courses),
+        },
+      );
+      return generateSuccessResponse();
+    } catch (err) {
+      return generateErrorResponse(err, err.message, err.status);
+    }
   }
 }
