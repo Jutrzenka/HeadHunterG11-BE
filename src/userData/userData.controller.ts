@@ -57,11 +57,11 @@ export class UserDataController {
     return this.userDataService.getStudentForHr(idUser);
   }
 
-  @Delete('/students/interviews/:id')
+  @Delete('/students/interviews/:idInterview')
   @UseGuards(JwtHrGuard)
   async removeInterview(
     @UserObj() user: User,
-    @Param('id') id: string,
+    @Param('idInterview') id: string,
   ): Promise<JsonCommunicationType> {
     return this.userDataService.removeInterviewByHr(user, id);
   }

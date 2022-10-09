@@ -122,7 +122,7 @@ export class AuthService {
         return res
           .status(200)
           .cookie('jwt', token.accessToken, {
-            secure: configuration().server.ssl,
+            secure: configuration().server.secure,
             domain: configuration().server.domain,
             sameSite: 'none',
             httpOnly: true,
@@ -146,11 +146,7 @@ export class AuthService {
         { idUser: user.idUser },
         { accessToken: null },
       );
-      res.clearCookie('jwt', {
-        secure: configuration().server.ssl,
-        domain: configuration().server.domain,
-        httpOnly: true,
-      });
+      res.clearCookie('jwt');
 
       return res.status(200).json(generateSuccessResponse());
     } catch (err) {

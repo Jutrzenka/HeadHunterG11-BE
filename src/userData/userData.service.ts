@@ -76,7 +76,7 @@ export class UserDataService {
           teamProjectDegree:
             teamProjectDegree && MoreThanOrEqual(teamProjectDegree),
           canTakeApprenticeship,
-          monthsOfCommercialExp: monthsOfCommercialExp,
+          monthsOfCommercialExp,
           expectedContractType,
           expectedTypeWork,
           expectedSalary:

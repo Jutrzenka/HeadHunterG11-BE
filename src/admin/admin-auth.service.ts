@@ -45,7 +45,7 @@ export class AdminAuthService {
 
       return res
         .cookie('jwtAdmin', token.accessToken, {
-          secure: configuration().server.ssl,
+          secure: configuration().server.secure,
           domain: configuration().server.domain,
           sameSite: 'none',
           httpOnly: true,
@@ -68,11 +68,7 @@ export class AdminAuthService {
         { idAdmin: admin.idAdmin },
         { accessToken: null },
       );
-      res.clearCookie('jwtAdmin', {
-        secure: configuration().server.ssl,
-        domain: configuration().server.domain,
-        httpOnly: true,
-      });
+      res.clearCookie('jwtAdmin');
       return res.json(generateSuccessResponse());
     } catch (err) {
       return res.json(generateErrorResponse(err, err.message, err.status));
