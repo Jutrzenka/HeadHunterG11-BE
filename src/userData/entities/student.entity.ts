@@ -1,6 +1,18 @@
 import { type } from 'os';
 import { Interview } from 'src/interview/entities/interview.entity';
+<<<<<<< HEAD:src/userData/entities/student.entity.ts
 import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+=======
+import { v4 as uuid } from 'uuid';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
+>>>>>>> 277b2a5b3021cb90893d51030c632c4d46bd1950:src/user/entities/student.entity.ts
 import { Status, TypeWork, ContractType } from '../../Utils/types/export';
 
 @Entity()
@@ -10,13 +22,27 @@ export class Student extends BaseEntity {
     primary: true,
     nullable: false,
     unique: true,
+<<<<<<< HEAD:src/userData/entities/student.entity.ts
+=======
+    default: uuid(),
+>>>>>>> 277b2a5b3021cb90893d51030c632c4d46bd1950:src/user/entities/student.entity.ts
   })
   id: string;
 
   @Column({
+<<<<<<< HEAD:src/userData/entities/student.entity.ts
     type: 'enum',
     enum: Status,
     default: Status.Inactive,
+=======
+    length: 36,
+    nullable: false,
+  })
+  idUser: string;
+
+  @Column({
+    nullable: true,
+>>>>>>> 277b2a5b3021cb90893d51030c632c4d46bd1950:src/user/entities/student.entity.ts
   })
   status: Status;
 

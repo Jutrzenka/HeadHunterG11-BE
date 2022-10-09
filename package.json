@@ -35,8 +35,11 @@
     "@nestjs/serve-static": "^3.0.0",
     "@nestjs/typeorm": "^9.0.0",
     "bcrypt": "^5.0.1",
+<<<<<<< HEAD
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
+=======
+>>>>>>> 277b2a5b3021cb90893d51030c632c4d46bd1950
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.0.1",
     "helmet": "^5.1.1",

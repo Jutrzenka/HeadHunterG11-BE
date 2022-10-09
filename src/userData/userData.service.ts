@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { AuthService } from 'src/auth/auth.service';
 import { JsonCommunicationType } from '../Utils/types/data/JsonCommunicationType';
@@ -23,10 +24,17 @@ import { employEmailTemplate } from '../mail/templates/employ-email.template';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { validateEmail } from '../Utils/function/validateEmail';
 import { Between, MoreThanOrEqual } from 'typeorm';
+=======
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from './entities/user.entity';
+>>>>>>> 277b2a5b3021cb90893d51030c632c4d46bd1950
 
 @Injectable()
 export class UserDataService {
   constructor(
+<<<<<<< HEAD
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
     @Inject(forwardRef(() => AuthService)) private authService: AuthService,
@@ -323,5 +331,20 @@ export class UserDataService {
     } catch (err) {
       return generateErrorResponse(err, err.message, err.status);
     }
+=======
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
+  ) {}
+  async create({
+    idUser,
+    firstName,
+    lastName,
+  }: {
+    idUser: string;
+    firstName: string;
+    lastName: string;
+  }) {
+    return this.usersRepository.create({ idUser, firstName, lastName }).save();
+>>>>>>> 277b2a5b3021cb90893d51030c632c4d46bd1950
   }
 }

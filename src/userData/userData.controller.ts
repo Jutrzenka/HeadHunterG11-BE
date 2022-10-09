@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import {
   Body,
   Controller,
@@ -108,5 +109,27 @@ export class UserDataController {
     @Res() res: Response,
   ): Promise<JsonCommunicationType> {
     return this.userDataService.getEmploy(user, res);
+=======
+import { Controller, Get, Inject, UseGuards } from '@nestjs/common';
+import { UserDataService } from './userData.service';
+import { AuthGuard } from '@nestjs/passport';
+
+@Controller('user')
+export class UserDataController {
+  constructor(
+    @Inject(UserDataService) private userDataService: UserDataService,
+  ) {}
+
+  @Get('/student')
+  @UseGuards(AuthGuard('jwtStudent'))
+  getUser() {
+    return 'user';
+  }
+
+  @Get('/hr')
+  @UseGuards(AuthGuard('jwtHr'))
+  getHr() {
+    return 'Hr';
+>>>>>>> 277b2a5b3021cb90893d51030c632c4d46bd1950
   }
 }

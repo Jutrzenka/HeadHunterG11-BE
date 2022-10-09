@@ -7,7 +7,10 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Hr } from '../../userData/entities/hr.entity';
+<<<<<<< HEAD
 import { Student } from '../../userData/entities/student.entity';
+=======
+>>>>>>> 277b2a5b3021cb90893d51030c632c4d46bd1950
 
 @Entity()
 export class Interview extends BaseEntity {
